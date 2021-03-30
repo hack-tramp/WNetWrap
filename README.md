@@ -45,9 +45,7 @@ Firefox is used by default but you can specify your own, for example an Apple iP
 If you are sending data via POST you can set the data like this:<br>
 `my_request.postdata = "{\"b\":\"a\"}"`<br>
 
-
-# HTTP POST request<br><br>
-
+# HTTP POST request
 Here we are sending a POST request with JSON data `{"b":"a"}` which is then echoed back to us:<br>
 
 ```
@@ -59,7 +57,7 @@ my_response = HttpsRequest("https://postman-echo.com/post", my_request);
 cout << my_response.raw << endl;
 ```
 
-Note that we are outputting without parsing anything, using `my_response.raw`<br> The result should be: <br>
+Note that we are outputting without parsing anything, using `my_response.raw`<br> The result should be something like this: <br>
 
 ```
 {"args":{},"data":{"b":"a"},"files":{},"form":{},"headers":{"x-forwarded-proto":"https","x-forwarded-port":"443","host":"postman-echo.com","x-amzn-trace-id":"Root=1-60634f18-2270c652666720526210e242","content-length":"9","accept":"*/*, */*","connection ":"keep-alive","content-type":"application/json","referer ":"my.bla.com","user-agent":"Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0","cache-control":"no-cache"},"json":{"b":"a"},"url":"https://postman-echo.com/post"}
