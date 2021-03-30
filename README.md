@@ -44,7 +44,7 @@ my_request.ua = "Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWeb
 ```c++ 
 my_request.set_header( "Referer" , "my.referer.com" );
 ```
-<br><br>
+<br>
 **Updating a header**<br>Note that as HTTP header fields are case-insensitive, they will always be stored and sent in lowercase - this means this will still work:<br>
 ```c++ 
 my_request.set_header("RefErEr", "my.bla.com");
@@ -69,7 +69,11 @@ my_response = HttpsRequest("https://postman-echo.com/post", my_request);
 cout << my_response.raw << endl;
 ```
 
-Note that we are outputting without parsing anything, using `my_response.raw`<br> The result should be something like this: <br>
+Note that we are outputting without parsing anything, using 
+```c++ 
+my_response.raw
+```
+<br> The result should be something like this: <br>
 
 ```
 {"args":{},"data":{"b":"a"},"files":{},"form":{},"headers":{"x-forwarded-proto":"https","x-forwarded-port":"443","host":"postman-echo.com","x-amzn-trace-id":"Root=1-60634f18-2270c652666720526210e242","content-length":"9","accept":"*/*, */*","connection ":"keep-alive","content-type":"application/json","referer ":"my.bla.com","user-agent":"Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0","cache-control":"no-cache"},"json":{"b":"a"},"url":"https://postman-echo.com/post"}
