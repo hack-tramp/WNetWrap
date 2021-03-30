@@ -3,7 +3,7 @@ A small library which helps to use WinInet to make simple HTTP(S) requests in C+
 
 # Basic HTTP GET request
 
-```
+```c++
 #include <iostream>
 #include "wnetwrap.h"
 
@@ -29,26 +29,38 @@ More information...
 The `req` request object is used and can be used for the following (all inputs are strings)
 
 **Specifying the HTTP method**<br>
-`req my_request; my_request.method = "GET";`
+```c++ 
+req my_request; my_request.method = "GET";
+```
 
 **Setting the user agent**<br>
 Firefox is used by default but you can specify your own, for example an Apple iPhone XR (Safari):<br>
-`my_request.ua = "Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1";`
+```c++ 
+my_request.ua = "Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1";
+```
 
 
 **Setting a header**:<br>
-`my_request.set_header( "Referer" , "my.referer.com" );` <br><br>
+```c++ 
+my_request.set_header( "Referer" , "my.referer.com" );
+```
+<br><br>
 **Updating a header**<br>Note that as HTTP header fields are case-insensitive, they will always be stored and sent in lowercase - this means this will still work:<br>
-`my_request.set_header("RefErEr", "my.bla.com");`
+```c++ 
+my_request.set_header("RefErEr", "my.bla.com");
+```
 
 **Posting data**<br>
 If you are sending data via POST you can set the data like this:<br>
-`my_request.postdata = "{\"b\":\"a\"}"`<br>
+```c++ 
+my_request.postdata = "{\"b\":\"a\"}"
+```
+<br>
 
 # HTTP POST request
 Here we are sending a POST request with JSON data `{"b":"a"}` which is then echoed back to us:<br>
 
-```
+```c++
 my_request.method = "POST";
 my_request.set_header("Content-Type:", "application/json");
 my_request.postdata = "{\"b\":\"a\"}";
