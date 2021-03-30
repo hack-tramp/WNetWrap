@@ -1,7 +1,7 @@
 # wnetwrap
 A small library which helps to use WinInet to make simple HTTP(S) requests in C++.
 
-#Basic HTTP GET request
+# Basic HTTP GET request
 
 ```
 #include <iostream>
