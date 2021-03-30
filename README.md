@@ -45,17 +45,18 @@ my_request.ua = "Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWeb
 my_request.set_header( "Referer" , "my.referer.com" );
 ```
 <br>
+
 **Updating a header**<br>Note that as HTTP header fields are case-insensitive, they will always be stored and sent in lowercase - this means this will still work:<br>
 ```c++ 
 my_request.set_header("RefErEr", "my.bla.com");
-```
+``` 
 
 **Posting data**<br>
 If you are sending data via POST you can set the data like this:<br>
 ```c++ 
 my_request.postdata = "{\"b\":\"a\"}"
 ```
-<br>
+
 
 # HTTP POST request
 Here we are sending a POST request with JSON data `{"b":"a"}` which is then echoed back to us:<br>
