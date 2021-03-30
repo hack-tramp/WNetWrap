@@ -70,7 +70,7 @@ my_response = HttpsRequest("https://postman-echo.com/post", my_request);
 cout << my_response.raw << endl;
 ```
 
-Note that we are outputting without parsing anything, using 
+Note that we are outputting the response without parsing anything, using 
 ```c++ 
 my_response.raw
 ```
