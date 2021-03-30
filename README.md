@@ -1,5 +1,5 @@
 # wnetwrap
-强大的Http请求类，封装了windows WinInet底层API<br>
+强大的Http请求类，封装了windows WinInet底层API<br><br>
 A small library which helps to use WinInet to make simple HTTP(S) requests in C++. As WinInet is a native windows library, there are no dependencies, and wnetwrap is lightweight compared to other libraries like CPR.
 
 # Basic HTTP GET request
