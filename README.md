@@ -24,14 +24,16 @@ This domain is for use in illustrative examples in documents. You may use this d
 More information...
 ```
 
-# Preparing a request
+# Preparing the request
 
-The `req` request object is used and can be used for the following:
+The `req` request object is used and can be used for the following (all inputs are strings)
 
-<b>Setting a header</b>:<br>
-`req my_request;
-my_request.set_header( "Referer" , "my.referer.com" );` <br><br>
-<b>Updating a header</b><br>ote that as HTTP header fields are case-insensitive, they will always be stored and sent in lowercase - this means this will still work:<br>
+**Specifying the HTTP method**
+`req my_request; my_request.method = "GET"`
+
+**Setting a header**:<br>
+`my_request.set_header( "Referer" , "my.referer.com" );` <br><br>
+**Updating a header**<br>Note that as HTTP header fields are case-insensitive, they will always be stored and sent in lowercase - this means this will still work:<br>
 `my_request.set_header("RefErEr", "my.bla.com");`
 
 
