@@ -28,8 +28,13 @@ More information...
 
 The `req` request object is used and can be used for the following (all inputs are strings)
 
-**Specifying the HTTP method**
-`req my_request; my_request.method = "GET"`
+**Specifying the HTTP method**<br>
+`req my_request; my_request.method = "GET";`
+
+**Setting the user agent**
+Firefox is used by default but you can specify your own, for example an Apple iPhone XR (Safari):
+`my_request.ua = "Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1";`
+
 
 **Setting a header**:<br>
 `my_request.set_header( "Referer" , "my.referer.com" );` <br><br>
