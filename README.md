@@ -1,5 +1,5 @@
 # wnetwrap [![CI](https://github.com/hack-tramp/wnetwrap/actions/workflows/main.yml/badge.svg)](https://github.com/hack-tramp/wnetwrap/actions/workflows/main.yml)
-<br>
+  
 A tiny library using WinInet to make simple HTTP(S) requests in C++. As WinInet is a native windows library, there are no dependencies, and wnetwrap is very lightweight compared to other libraries like CPR.
 
 # Basic HTTP GET request
