@@ -54,17 +54,35 @@ my_request.postdata = "{\"b\":\"a\"}"
 
 # Handling the response
 <br>
-**Retrieving the headers**<br>
-The response is stored into a `resp` object. To get info from the headers received use `get_header("header_field")`<br>
+
+**Retrieving the headers**
+
+<br>
+
+The response is stored into a `resp` object. To get info from the headers received use `get_header("header_field")`
+
+<br>
 
 ```c++
 resp my_response = HttpsRequest("https://www.example.com/", my_request);
 cout << my_response.get_header("date")
 ```
+<br>
+
+For headers sent, use `get_header("header_field", "sent")`
 
 <br>
-To output all the headers in one go, you will need to cycle through the `received_headers` or `sent_headers` map:
+
+```c++
+resp my_response = HttpsRequest("https://www.example.com/", my_request);
+cout << my_response.get_header("referer","sent")
+```
 <br>
+
+To output all the headers in one go, you will need to cycle through the `received_headers` or `sent_headers` map:
+
+<br>
+
 
 ```c++ 
 cout << "recd headers map:" << endl;
