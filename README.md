@@ -1,6 +1,6 @@
 # wnetwrap
 强大的Http请求类，封装了windows WinInet底层API<br><br>
-A small library which helps to use WinInet to make simple HTTP(S) requests in C++. As WinInet is a native windows library, there are no dependencies, and wnetwrap is lightweight compared to other libraries like CPR.
+A small library using WinInet to make simple HTTP(S) requests in C++. As WinInet is a native windows library, there are no dependencies, and wnetwrap is very lightweight compared to other libraries like CPR.
 
 # Basic HTTP GET request
 
@@ -18,12 +18,6 @@ int main()
 	cout << my_response.text << endl; //very basic html parser
  }
   ```
-  This will send a GET request to the specified URL and do some basic parsing to show the website text - the result for www.example.com should look like this:
-```
-Example Domain
-This domain is for use in illustrative examples in documents. You may use this domain in literature without prior coordination or asking for permission.
-More information...
-```
 
 # Preparing the request
 
@@ -58,21 +52,41 @@ If you are sending data via POST you can set the data like this:<br>
 my_request.postdata = "{\"b\":\"a\"}"
 ```
 
+# Handling the response
+<br>
+**Retrieving the headers**<br>
+The response is stored into a `resp` object. To get info from the headers received use `get_header("header_field")`<br>
+
+```c++
+resp my_response = HttpsRequest("https://www.example.com/", my_request);
+cout << my_response.get_header("date")
+```
+
+<br>
+To output all the headers in one go, you will need to cycle through the `received_headers` or `sent_headers` map:
+<br>
+
+```c++ 
+cout << "recd headers map:" << endl;
+for (auto elem : my_response.received_headers)
+{
+	cout << elem.first + " : " + elem.second + "\r\n";
+}
+``` 
 
 # HTTP POST request
 Here we are sending a POST request with JSON data `{"b":"a"}` which is then echoed back to us:<br>
-
-```c++
+```c++ 
 my_request.method = "POST";
 my_request.set_header("Content-Type:", "application/json");
 my_request.postdata = "{\"b\":\"a\"}";
 my_response = HttpsRequest("https://postman-echo.com/post", my_request);
 
 cout << my_response.raw << endl;
-```
+``` 
 
 Note that we are outputting the response without parsing anything, using 
-```c++ 
+```c++
 my_response.raw
 ```
 <br> The result should be something like this: <br>
