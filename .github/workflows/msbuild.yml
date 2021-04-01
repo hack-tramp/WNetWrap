@@ -1,8 +1,11 @@
 name: MSBuild
 
-on: [push]
-
-paths-ignore:[README.md]
+on: 
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - .\README.md
 
 env:
   # Path to the solution file relative to the root of the project.
