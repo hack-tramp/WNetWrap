@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths-ignore:
-      - .\README.md
+      - '.\README.md'
 
 env:
   # Path to the solution file relative to the root of the project.
