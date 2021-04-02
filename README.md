@@ -1,4 +1,4 @@
-# WNetWrap  [![MSBuild](https://github.com/hack-tramp/wnetwrap/actions/workflows/msbuild.yml/badge.svg)](https://github.com/hack-tramp/wnetwrap/actions/workflows/msbuild.yml) [![Generic Badge](https://img.shields.io/badge/c%2B%2B-14-blue)](https://github.com/topics/c-plus-plus-14) [![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://github.com/hack-tramp/wnetwrap/blob/main/LICENSE)<br>
+# WNetWrap  [![MSBuild](https://github.com/hack-tramp/wnetwrap/actions/workflows/msbuild.yml/badge.svg)](https://github.com/hack-tramp/wnetwrap/actions/workflows/msbuild.yml) [![Generic Badge](https://img.shields.io/badge/c%2B%2B-11-blue)](https://github.com/topics/c-plus-plus-11) [![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://github.com/hack-tramp/wnetwrap/blob/main/LICENSE)<br>
   
 A tiny library using [WinInet](https://docs.microsoft.com/en-us/windows/win32/wininet/about-wininet) for HTTP(S) requests in C++. As WinInet is a native windows library, there are no dependencies, and WNetWrap is very lightweight compared to other libraries like [CPR](https://github.com/whoshuu/cpr).
 
