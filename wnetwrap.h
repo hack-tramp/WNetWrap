@@ -4,7 +4,8 @@
 #include <windows.h>
 #include <WinInet.h>
 #include <Winineti.h>
-
+#include <stdio.h>
+#include <iostream>
 #include <map>
 #include <regex>
 
@@ -35,7 +36,7 @@ namespace wrap {
 			}
 		};
 		std::string method = "GET";
-		LPCSTR AcceptedTypes[100] = { "*/*","*/*",NULL }; //must be null terminated std::string array
+		LPCSTR AcceptedTypes[100] = { "*/*" , NULL }; //must be null terminated std::string array
 		std::string postdata;
 		std::string ua = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0";
 	};
@@ -69,6 +70,7 @@ namespace wrap {
 						output = received_headers[key];
 					}
 				}
+			
 				return output;
 			}
 			catch (...) {
@@ -88,7 +90,7 @@ namespace wrap {
 		std::string err;
 	};
 
-	resp HttpsRequest(std::string site, req request);
+	resp HttpsRequest(std::string site, req request,std::string dload);
 	std::string text_from_html(std::string html);
 
 

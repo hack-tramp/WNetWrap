@@ -1,0 +1,2 @@
+C:\Users\Me\source\repos\wnetwrap\x64\Debug\wnetwrap.exe
+C:\Users\Me\source\repos\wnetwrap\x64\Debug\wnetwrap.pdb

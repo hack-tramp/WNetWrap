@@ -2,7 +2,7 @@
 
 #pragma comment(lib, "Wininet.lib")
 
-wrap::resp wrap::HttpsRequest(std::string site, wrap::req request) {
+wrap::resp wrap::HttpsRequest(std::string site, wrap::req request, std::string dload = "") {
 	wrap::resp output;
 	HINTERNET hInternet = InternetOpenA(request.ua.c_str(), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
 
@@ -15,7 +15,7 @@ wrap::resp wrap::HttpsRequest(std::string site, wrap::req request) {
 	{
 		//do some very basic URI parsing to separate host (for InternetConnect) from path (used in HttpOpenRequest)
 		//also to see what protocol is specified
-		std::string host, path, protocol = "";
+		std::string host, path, protocol, urlfile = "";
 
 		//protocol and host
 		host = site;
@@ -24,15 +24,18 @@ wrap::resp wrap::HttpsRequest(std::string site, wrap::req request) {
 			host = host.substr(host.find("://") + 3);
 			//cout << "clipped host: " + host << endl;
 		}
-		else { //otherwise assume it's http (not https)
-			protocol = "http";
+		else { //otherwise assume it's https 
+			protocol = "https";
 		}
-		//default is http
+		//default is https
 		DWORD service = INTERNET_SERVICE_HTTP;
-		INTERNET_PORT port = INTERNET_DEFAULT_HTTP_PORT;
+		INTERNET_PORT port = INTERNET_DEFAULT_HTTPS_PORT;
 
 		if (protocol == "https") {
 			port = INTERNET_DEFAULT_HTTPS_PORT;
+		}
+		else if (protocol == "http") {
+			port = INTERNET_DEFAULT_HTTP_PORT;
 		}
 		else if (protocol == "ftp") {
 			port = INTERNET_DEFAULT_FTP_PORT;
@@ -52,11 +55,34 @@ wrap::resp wrap::HttpsRequest(std::string site, wrap::req request) {
 					path = host.substr(host.find("?"));
 					host = host.substr(0, host.find("?"));
 				}
+				//if theres a file extension, store filename
+				if (path.find_last_of("/")!= std::string::npos) {
+					if (path.substr(path.find_last_of("/") + 1).find(".") != std::string::npos) {
+						urlfile = path.substr(path.find_last_of("/") + 1);
+					}
+				}
+				else {
+					if (path.find_last_of("?") != std::string::npos) {
+						if (path.substr(path.find_last_of("?") + 1).find(".") != std::string::npos) {
+							urlfile = path.substr(path.find_last_of("?") + 1);
+						}
+					}
+				}
+			}
+			else { //if its the last char, trim because wininet doesnt like a trailing / or ?
+				host = host.substr(0, host.size() - 1);
+				//std::cout << "trimmed last char of host" << std::endl;
 			}
 		}
-
-		//cout << "host: "+host << endl << "path: "+path << endl << "protocol: "+protocol << endl;
+		//entering dl means the file is saved as its original filename
+		if (dload == "dl") {
+			dload = urlfile;
+		}
+		std::cout << port << std::endl;
+		std::cout << service << std::endl;
+		std::cout << "host: "+host << std::endl << "path: "+path << std::endl << "protocol: "+protocol << std::endl << "file: " + urlfile << std::endl << "input url: " + site << std::endl;
 		HINTERNET hConnect = InternetConnectA(hInternet, host.c_str(), port, NULL, NULL, service, 0, NULL);
+
 
 		if (hConnect == NULL)
 		{
@@ -65,8 +91,8 @@ wrap::resp wrap::HttpsRequest(std::string site, wrap::req request) {
 		}
 		else
 		{
-			std::string param = ""; //eg "Dir1/Dir2/Login.php?page=1" - might need leading /
-			HINTERNET hRequest = HttpOpenRequestA(hConnect, request.method.c_str(), path.c_str(), NULL, NULL, request.AcceptedTypes, INTERNET_FLAG_SECURE, 0);
+			//eg path "Dir1/Dir2/Login.php?page=1" - might need leading /
+			HINTERNET hRequest = HttpOpenRequestA(hConnect, request.method.c_str(), path.c_str(), "HTTP/1.1", NULL, request.AcceptedTypes, INTERNET_FLAG_SECURE, 0);
 
 			if (hRequest == NULL)
 			{
@@ -79,12 +105,16 @@ wrap::resp wrap::HttpsRequest(std::string site, wrap::req request) {
 				//see remarks here: https://docs.microsoft.com/en-us/windows/win32/api/wininet/nf-wininet-httpsendrequestw
 
 				//assemble headers from map
-				std::string final_headers;
+				std::string final_headers = "";
 				for (auto elem : request.headers)
 				{
-					final_headers += elem.first + " : " + elem.second + "\r\n";
+					final_headers += elem.first + ":" + elem.second + "\r\n";
 				}
-				final_headers += "\r\n\r\n"; //null terminated std::string
+				if (final_headers != "") {
+					final_headers += "\r\n\r\n"; //null terminated string
+					
+				}
+
 
 				std::string pdata = "";
 				DWORD pdlength = 0;
@@ -94,8 +124,14 @@ wrap::resp wrap::HttpsRequest(std::string site, wrap::req request) {
 					if (pdata.size() < 4294967295) { //to get rid of size_t to dword c4267
 						pdlength = (DWORD)pdata.size();
 					}
+
 				}
-				if (!HttpSendRequestA(hRequest, final_headers.c_str(), -1L, (LPVOID)pdata.c_str(), pdlength))
+				//std::cout << "final headers c string:" << std::endl;
+				//std::cout << final_headers.c_str() << std::endl;
+				//std::cout << final_headers.size() << std::endl;
+				//BOOL addhdr = HttpAddRequestHeadersA(hRequest, final_headers.c_str(), -1L, HTTP_ADDREQ_FLAG_ADD);
+				BOOL sendr = HttpSendRequestA(hRequest, final_headers.c_str(), -1L, (LPVOID) pdata.c_str(), pdlength);
+				if (!sendr)
 				{
 					output.err = "HttpSendRequest failed with error code " + GetLastError();
 					return output;
@@ -105,14 +141,29 @@ wrap::resp wrap::HttpsRequest(std::string site, wrap::req request) {
 					std::string strResponse;
 					const int nBuffSize = 1024;
 					char buff[nBuffSize];
-
+					FILE* pfile = nullptr;
+					if (dload != "") {
+						pfile = fopen(dload.c_str(), "wb");
+					}
+					
 					BOOL bKeepReading = true;
 					DWORD dwBytesRead = -1;
 
 					while (bKeepReading && dwBytesRead != 0)
 					{
 						bKeepReading = InternetReadFile(hRequest, buff, nBuffSize, &dwBytesRead);
-						strResponse.append(buff, dwBytesRead);
+						
+						if (pfile != nullptr) {
+							fwrite(buff, sizeof(char), dwBytesRead, pfile);
+						}
+						else {
+							strResponse.append(buff, dwBytesRead);
+						}
+						
+					}
+					if (pfile!=nullptr) {
+						fflush(pfile);
+						fclose(pfile);
 					}
 
 
@@ -173,6 +224,7 @@ wrap::resp wrap::HttpsRequest(std::string site, wrap::req request) {
 					else {
 
 						if (sent_headers != NULL) {
+							std::cout << std::endl << sent_headers << std::endl;
 							std::string s(sent_headers, d);
 							//break headers std::string into map
 							std::string delimiter = "\n";
@@ -188,7 +240,7 @@ wrap::resp wrap::HttpsRequest(std::string site, wrap::req request) {
 									//cout << "adding: " + first +" " + second << endl;
 									//NOTE: SENT HEADER KEYS ARE RETURNED WITH A TRAILING SPACE BY WININET - RECD HEADER KEYS ARENT
 									//FOR THIS REASON FOR SENT HEADERS WE DO SUBSTR 0, token.find(":") - 1 
-									output.sent_headers.insert(std::pair<std::string, std::string>(token.substr(0, token.find(":") - 1), token.substr(token.find(":") + 1)));
+									output.sent_headers.insert(std::pair<std::string, std::string>(token.substr(0, token.find(":") ), token.substr(token.find(":") + 1)));
 								}
 								s.erase(0, pos + delimiter.length());
 							}
