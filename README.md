@@ -2,7 +2,7 @@
   
 A tiny library using [WinInet](https://docs.microsoft.com/en-us/windows/win32/wininet/about-wininet) for HTTP(S) requests in C++. As WinInet is a native windows library, there are no dependencies, and WNetWrap is very lightweight compared to other libraries like [CPR](https://github.com/whoshuu/cpr).
 
-⚠️ This repo uses MS Visual Studio for the example, but *you don't need that to use WNetWrap* - all you need to do is put the `wnetwrap.h` and `wnetwrap.cpp` in your project folder, and include as in the example below.
+This repo uses MS Visual Studio for the example, but *you don't need that to use WNetWrap* - all you need to do is put the `wnetwrap.h` and `wnetwrap.cpp` in your project folder, and include as in the example below.
 
 # Basic HTTP GET request
 
@@ -20,7 +20,17 @@ int main()
 	cout << my_response.text << endl; //very basic html parser
  }
   ```
+ 
+URL query parameters can be passed as normal - here is a Google search as an example: <br>
+`resp my_response = HttpsRequest("https://www.google.com/search?q=testing+123", my_request);` 
 
+
+# Downloading a file
+
+To download the contents of the request you simply add a third parameter to HttpsRequest. If this parameter value is "dl" then the file is downloaded with its original filename, otherwise the value provided will be the new file's name. For example, to download the CPR library: <br><br>
+`resp my_response = HttpsRequest("https://github.com/whoshuu/cpr/archive/refs/tags/1.6.0.zip", my_request, "dl");`
+<br><br>
+When you download a file, the .raw and .text properties of the response object will be returned empty.
 # Preparing the request
 
 The `req` request object is used and can be used for the following (all inputs are strings)
