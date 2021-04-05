@@ -55,12 +55,15 @@ my_request.set_header( "Referer" , "my.referer.com" );
 ```
 <br>
 
-**Updating a header**<br>Note that as HTTP header fields are case-insensitive, they will always be stored and sent in lowercase - this means this will still work:<br>
+**Updating a header**
+ 
+Note that as HTTP header fields are case-insensitive, they will always be stored and sent in lowercase - this means this will still work:<br>
 ```c++ 
 my_request.set_header("RefErEr", "my.bla.com");
 ``` 
 
-**Posting data**<br>
+**Posting data**
+ 
 If you are sending data via POST you can set the data like this:<br>
 ```c++ 
 my_request.postdata = "{\"b\":\"a\"}"
