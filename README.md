@@ -34,8 +34,8 @@ To download the contents of the request you simply add a third parameter to `Htt
 ```c++
 resp my_response = HttpsRequest("https://github.com/whoshuu/cpr/archive/refs/tags/1.6.0.zip", my_request, "dl");
 ```
-<br>
 When you download a file, the `.raw` and `.text` properties of the response object will be returned empty.
+
 ## Preparing the request
 
 The `req` request object is used and can be used for the following (all inputs are strings)
