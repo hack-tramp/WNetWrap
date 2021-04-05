@@ -32,7 +32,7 @@ To download the contents of the request you simply add a third parameter to `Htt
 `resp my_response = HttpsRequest("https://github.com/whoshuu/cpr/archive/refs/tags/1.6.0.zip", my_request, "dl");`
 <br><br>
 When you download a file, the `.raw` and `.text` properties of the response object will be returned empty.
-# Preparing the request
+## Preparing the request
 
 The `req` request object is used and can be used for the following (all inputs are strings)
 
@@ -69,7 +69,7 @@ If you are sending data via POST you can set the data like this:<br>
 my_request.postdata = "{\"b\":\"a\"}"
 ```
 
-# Handling the response
+## Handling the response
 <br>
 
 **Retrieving the headers**
@@ -109,7 +109,7 @@ for (auto elem : my_response.received_headers)
 }
 ``` 
 
-# HTTP POST request
+## HTTP POST request
 Here we are sending a POST request with JSON data `{"b":"a"}` which is then echoed back to us:<br>
 ```c++ 
 my_request.method = "POST";
