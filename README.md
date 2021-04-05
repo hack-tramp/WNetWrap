@@ -24,7 +24,7 @@ int main()
 URL query parameters can be passed as normal - here is a Google search as an example:
 
 ```c++
-resp my_response = HttpsRequest("https://www.google.com/search?q=testing+123", my_request);
+HttpsRequest("https://www.google.com/search?q=testing+123", my_request);
 ```
 
 
