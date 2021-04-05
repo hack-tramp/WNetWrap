@@ -106,6 +106,8 @@ namespace wrap {
 		};
 		std::string raw;
 		std::string text;
+		std::string status_code;
+		//security 
 		std::string certificate;
 		std::string protocol;
 		std::string cipher;

@@ -78,9 +78,9 @@ wrap::resp wrap::HttpsRequest(std::string site, wrap::req request, std::string d
 		if (dload == "dl") {
 			dload = urlfile;
 		}
-		std::cout << port << std::endl;
-		std::cout << service << std::endl;
-		std::cout << "host: "+host << std::endl << "path: "+path << std::endl << "protocol: "+protocol << std::endl << "file: " + urlfile << std::endl << "input url: " + site << std::endl;
+		//std::cout << port << std::endl;
+		//std::cout << service << std::endl;
+		//std::cout << "host: "+host << std::endl << "path: "+path << std::endl << "protocol: "+protocol << std::endl << "file: " + urlfile << std::endl << "input url: " + site << std::endl;
 		HINTERNET hConnect = InternetConnectA(hInternet, host.c_str(), port, NULL, NULL, service, 0, NULL);
 
 
@@ -248,6 +248,17 @@ wrap::resp wrap::HttpsRequest(std::string site, wrap::req request, std::string d
 					}
 					free(sent_headers);
 					//free(temp); crashes
+
+					//get the status code
+					DWORD statusCode = 0;
+					DWORD length = sizeof(DWORD);
+					if (HttpQueryInfo(hRequest, HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER, &statusCode, &length, NULL)) {
+						output.status_code = std::to_string(statusCode);
+					}
+					else {
+						//error handling
+					}
+					
 
 					//get security info - see here : https://stackoverflow.com/questions/41187935/can-not-programmatically-determine-which-tls-version-my-app-uses
 					INTERNET_SECURITY_CONNECTION_INFO connInfo = { 0 };

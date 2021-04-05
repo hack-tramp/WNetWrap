@@ -18,21 +18,7 @@ int main()
 	resp my_response = HttpsRequest("https://example.com", my_request);
 	
 	cout << "security protocol: " + my_response.protocol << endl;
-	cout << endl << "sent headers map:" << endl;
-	for (auto elem : my_request.headers)
-	{
-		cout << elem.first + " : " + elem.second + "\r\n";
-	}
-	cout << endl << "sent headers map:" << endl;
-	for (auto elem : my_response.sent_headers)
-	{
-		cout << elem.first + " : " + elem.second + "\r\n";
-	}
-	cout << endl << "recd headers map:" << endl;
-	for (auto elem : my_response.received_headers)
-	{
-		cout << elem.first + " : " + elem.second + "\r\n";
-	}
+	cout << "status code: " + my_response.status_code << endl;
 	cout << my_response.text << endl;
 	//cout << "recd header: " + my_response.get_header("Referer") << std::endl;
 	//cout << "sent header: " + my_response.get_header("ReferEr", "sent") << std::endl;
