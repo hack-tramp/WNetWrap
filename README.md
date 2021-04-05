@@ -30,7 +30,7 @@ resp my_response = HttpsRequest("https://www.google.com/search?q=testing+123", m
 
 ## Downloading a file
 
-To download the contents of the request you simply add a third parameter to `HttpsRequest`. If this parameter value is `"dl"` then the file is downloaded with its original filename, otherwise the value provided will be the new file's name. For example, to download the CPR library: <br>
+To download the contents of the request you simply add a third parameter to `HttpsRequest`. If this parameter is `"dl"` then the file is downloaded with its original filename, otherwise the value provided will be the new file's name. For example, to download the CPR library: <br>
 ```c++
 resp my_response = HttpsRequest("https://github.com/whoshuu/cpr/archive/refs/tags/1.6.0.zip", my_request, "dl");
 ```
