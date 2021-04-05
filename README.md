@@ -36,12 +36,12 @@ When you download a file, the `.raw` and `.text` properties of the response obje
 
 The `req` request object is used and can be used for the following (all inputs are strings)
 
-**Specifying the HTTP method**<br>
+## Specifying the HTTP method<br>
 ```c++ 
 req my_request; my_request.method = "GET";
 ```
 
-##Setting the user agent
+## Setting the user agent
  
 Firefox is used by default but you can specify your own, for example an Apple iPhone XR (Safari):<br>
 ```c++ 
@@ -49,13 +49,13 @@ my_request.ua = "Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWeb
 ```
 
 
-##Setting a header:<br>
+## Setting a header:<br>
 ```c++ 
 my_request.set_header( "Referer" , "my.referer.com" );
 ```
 <br>
 
-##Updating a header
+## Updating a header
  
 Note that as HTTP header fields are case-insensitive, they will always be stored and sent in lowercase - this means this will still work:<br>
 ```c++ 
