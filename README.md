@@ -4,7 +4,7 @@ A tiny library using [WinInet](https://docs.microsoft.com/en-us/windows/win32/wi
 
 This repo uses MS Visual Studio for the example, but *you don't need that to use WNetWrap* - all you need to do is put the `wnetwrap.h` and `wnetwrap.cpp` in your project folder, and include as in the example below.
 
-# Basic HTTP GET request
+## Basic HTTP GET request
 
 ```c++
 #include <iostream>
@@ -26,7 +26,7 @@ URL query parameters can be passed as normal - here is a Google search as an exa
 `resp my_response = HttpsRequest("https://www.google.com/search?q=testing+123", my_request);` 
 
 
-# Downloading a file
+## Downloading a file
 
 To download the contents of the request you simply add a third parameter to `HttpsRequest`. If this parameter value is `"dl"` then the file is downloaded with its original filename, otherwise the value provided will be the new file's name. For example, to download the CPR library: <br><br>
 `resp my_response = HttpsRequest("https://github.com/whoshuu/cpr/archive/refs/tags/1.6.0.zip", my_request, "dl");`
@@ -36,12 +36,12 @@ When you download a file, the `.raw` and `.text` properties of the response obje
 
 The `req` request object is used and can be used for the following (all inputs are strings)
 
-## Specifying the HTTP method<br>
+**Specifying the HTTP method**<br>
 ```c++ 
 req my_request; my_request.method = "GET";
 ```
 
-## Setting the user agent
+**Setting the user agent**
  
 Firefox is used by default but you can specify your own, for example an Apple iPhone XR (Safari):<br>
 ```c++ 
@@ -49,13 +49,13 @@ my_request.ua = "Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWeb
 ```
 
 
-## Setting a header:<br>
+**Setting a header:**<br>
 ```c++ 
 my_request.set_header( "Referer" , "my.referer.com" );
 ```
 <br>
 
-## Updating a header
+**Updating a header**
  
 Note that as HTTP header fields are case-insensitive, they will always be stored and sent in lowercase - this means this will still work:<br>
 ```c++ 
