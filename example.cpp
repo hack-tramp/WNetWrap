@@ -13,8 +13,9 @@ int main()
 
 	my_request.set_header( "Connection" , "keep-alive" );
 	my_request.set_header("Referer", "bla.com");
+	my_request.clear_headers("Referer");
 
-	resp my_response = HttpsRequest("https://github.com/whoshuu/cpr/archive/refs/tags/1.6.0.zip", my_request, "dl");
+	resp my_response = HttpsRequest("https://example.com", my_request);
 	
 	cout << "security protocol: " + my_response.protocol << endl;
 	cout << endl << "sent headers map:" << endl;
@@ -56,6 +57,7 @@ int main()
 	}
 
 	*/
+	Sleep(60000);
 	return 0;
 }
 

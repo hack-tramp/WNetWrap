@@ -2,7 +2,7 @@
 
 #pragma comment(lib, "Wininet.lib")
 
-wrap::resp wrap::HttpsRequest(std::string site, wrap::req request, std::string dload = "") {
+wrap::resp wrap::HttpsRequest(std::string site, wrap::req request, std::string dload) {
 	wrap::resp output;
 	HINTERNET hInternet = InternetOpenA(request.ua.c_str(), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
 

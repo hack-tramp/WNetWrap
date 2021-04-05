@@ -35,6 +35,33 @@ namespace wrap {
 				return false;
 			}
 		};
+		bool clear_headers(std::string key = "") {
+			if (key == "") { //leave empty to clear all 
+				try {
+					headers.clear();
+					return true;
+				}
+				catch (...) {
+					return false;
+				}
+
+			}
+			else {
+				try {
+					std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+					if (headers.find(key) != headers.end()) { // if element exists
+						headers.erase(key);
+						return true;
+					}
+					else {
+						return false;
+					}
+				}
+				catch (...) {
+					return false;
+				}
+			}
+		};
 		std::string method = "GET";
 		LPCSTR AcceptedTypes[100] = { "*/*" , NULL }; //must be null terminated std::string array
 		std::string postdata;
@@ -90,7 +117,7 @@ namespace wrap {
 		std::string err;
 	};
 
-	resp HttpsRequest(std::string site, req request,std::string dload);
+	resp HttpsRequest(std::string site, req request,std::string dload = "");
 	std::string text_from_html(std::string html);
 
 
