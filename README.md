@@ -136,7 +136,7 @@ cipher : AES 128-bit encryption algorithm
 ```
 Due to WinInet limitations, some data such as the protocol and encryption type may appear as `(null)` - however this may be found in other parts of the certificate, such as under `Issuer` above. This can also be found as one of several additional elements in the `secinfo` map:
 ```c++
-cout << my_response.secinfo["protocol"]; // for example.com : Transport Layer Security 1.2 client-side 
+cout << my_response.secinfo["protocol"]; // example.com: Transport Layer Security 1.2 client-side 
 ```
 Cycling through the `secinfo` map will show all other available security info:
 ```c++ 
