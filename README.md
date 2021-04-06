@@ -41,7 +41,7 @@ The `req` request object can be used for the following (all inputs are strings)
 
 **Specifying the HTTP method**<br>
 ```c++ 
-req my_request; my_request.method = "GET";
+req my_request; my_request.method = "GET"; // already set to GET by default 
 ```
 
 **Setting the user agent**
@@ -73,15 +73,11 @@ my_request.postdata = "{\"b\":\"a\"}"
 ```
 
 ## Handling the response
-<br>
-
+ 
 **Retrieving the headers**
-
-<br>
 
 The response is stored into a `resp` object. To get info from the headers received use `get_header("header_field")`
 
-<br>
 
 ```c++
 resp my_response = HttpsRequest("https://www.example.com/", my_request);
