@@ -37,7 +37,7 @@ When you download a file, the `.raw` and `.text` properties of the response obje
 
 ## Preparing the request
 
-The `req` request object is used and can be used for the following (all inputs are strings)
+The `req` request object can be used for the following (all inputs are strings)
 
 **Specifying the HTTP method**<br>
 ```c++ 
