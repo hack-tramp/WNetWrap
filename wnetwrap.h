@@ -104,18 +104,10 @@ namespace wrap {
 				return "";
 			}
 		};
+		std::map <std::string, std::string> secinfo;
 		std::string raw;
 		std::string text;
 		std::string status_code;
-		//security 
-		std::string certificate;
-		std::string protocol;
-		std::string cipher;
-		std::string cipher_strength;
-		std::string hash;
-		std::string hash_strength;
-		std::string exch;
-		std::string ech_strength;
 		std::string err;
 	};
 

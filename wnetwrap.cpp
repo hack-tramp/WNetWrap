@@ -224,7 +224,7 @@ wrap::resp wrap::HttpsRequest(std::string site, wrap::req request, std::string d
 					else {
 
 						if (sent_headers != NULL) {
-							std::cout << std::endl << sent_headers << std::endl;
+							//std::cout << std::endl << sent_headers << std::endl;
 							std::string s(sent_headers, d);
 							//break headers std::string into map
 							std::string delimiter = "\n";
@@ -266,18 +266,48 @@ wrap::resp wrap::HttpsRequest(std::string site, wrap::req request, std::string d
 					InternetQueryOption(hRequest, INTERNET_OPTION_SECURITY_CONNECTION_INFO, &connInfo, &certInfoLength);
 					//cout << connInfo.connectionInfo.dwProtocol << endl;
 					switch (connInfo.connectionInfo.dwProtocol) {
-					case(SP_PROT_TLS1_2_CLIENT): output.protocol = "Transport Layer Security 1.2 client-side"; break;
-					case(SP_PROT_TLS1_1_CLIENT): output.protocol = "Transport Layer Security 1.1 client-side"; break;
-					case(SP_PROT_TLS1_CLIENT): output.protocol = "Transport Layer Security 1.0 client-side"; break;
-					case(SP_PROT_TLS1_SERVER): output.protocol = "Transport Layer Security 1.0 server-side"; break;
-					case(SP_PROT_SSL3_CLIENT): output.protocol = "Secure Sockets Layer 3.0 client-side."; break;
-					case(SP_PROT_SSL3_SERVER): output.protocol = "Secure Sockets Layer 3.0 server-side."; break;
-					case(SP_PROT_TLS1_1_SERVER): output.protocol = "Transport Layer Security 1.1 server-side."; break;
-					case(SP_PROT_TLS1_2_SERVER): output.protocol = "Transport Layer Security 1.2 server-side."; break;
-					case(SP_PROT_SSL2_CLIENT): output.protocol = "Secure Sockets Layer 2.0 client-side. Superseded by SP_PROT_TLS1_CLIENT."; break;
-					case(SP_PROT_SSL2_SERVER): output.protocol = "Secure Sockets Layer 2.0 server-side. Superseded by SP_PROT_TLS1_SERVER. "; break;
-					case(SP_PROT_PCT1_CLIENT): output.protocol = "Private Communications Technology 1.0 client-side. Obsolete."; break;
-					case(SP_PROT_PCT1_SERVER): output.protocol = "Private Communications Technology 1.0 server-side. Obsolete."; break;
+					case(SP_PROT_TLS1_2_CLIENT): output.secinfo["protocol"] = "Transport Layer Security 1.2 client-side"; break;
+					case(SP_PROT_TLS1_1_CLIENT): output.secinfo["protocol"] = "Transport Layer Security 1.1 client-side"; break;
+					case(SP_PROT_TLS1_CLIENT): output.secinfo["protocol"] = "Transport Layer Security 1.0 client-side"; break;
+					case(SP_PROT_TLS1_SERVER): output.secinfo["protocol"] = "Transport Layer Security 1.0 server-side"; break;
+					case(SP_PROT_SSL3_CLIENT): output.secinfo["protocol"] = "Secure Sockets Layer 3.0 client-side."; break;
+					case(SP_PROT_SSL3_SERVER): output.secinfo["protocol"] = "Secure Sockets Layer 3.0 server-side."; break;
+					case(SP_PROT_TLS1_1_SERVER): output.secinfo["protocol"] = "Transport Layer Security 1.1 server-side."; break;
+					case(SP_PROT_TLS1_2_SERVER): output.secinfo["protocol"] = "Transport Layer Security 1.2 server-side."; break;
+					case(SP_PROT_SSL2_CLIENT): output.secinfo["protocol"] = "Secure Sockets Layer 2.0 client-side. Superseded by SP_PROT_TLS1_CLIENT."; break;
+					case(SP_PROT_SSL2_SERVER): output.secinfo["protocol"] = "Secure Sockets Layer 2.0 server-side. Superseded by SP_PROT_TLS1_SERVER. "; break;
+					case(SP_PROT_PCT1_CLIENT): output.secinfo["protocol"] = "Private Communications Technology 1.0 client-side. Obsolete."; break;
+					case(SP_PROT_PCT1_SERVER): output.secinfo["protocol"] = "Private Communications Technology 1.0 server-side. Obsolete."; break;
+					}
+
+					switch (connInfo.connectionInfo.aiCipher) {
+					case(CALG_3DES): output.secinfo["cipher"] = "3DES block encryption algorithm"; break;
+					case(CALG_AES_128): output.secinfo["cipher"] = "AES 128-bit encryption algorithm"; break;
+					case(CALG_AES_256): output.secinfo["cipher"] = "AES 256-bit encryption algorithm"; break;
+					case(CALG_DES): output.secinfo["cipher"] = "DES encryption algorithm"; break;
+					case(CALG_RC2): output.secinfo["cipher"] = "RC2 block encryption algorithm"; break;
+					case(CALG_RC4): output.secinfo["cipher"] = "RC4 stream encryption algorithm"; break;
+					case(0): output.secinfo["cipher"] = "No encryption"; break;
+					}
+
+					output.secinfo["cipher_strength"] = std::to_string(connInfo.connectionInfo.dwCipherStrength);
+					
+					switch (connInfo.connectionInfo.aiHash) {
+					case(CALG_MD5): output.secinfo["hash"] = "MD5 hashing algorithm"; break;
+					case(CALG_SHA): output.secinfo["hash"] = "SHA hashing algorithm"; break;
+					}
+
+					if (output.secinfo["hash"] != "") {
+						output.secinfo["hash_strength"] = std::to_string(connInfo.connectionInfo.dwHashStrength);
+					}
+					
+					switch (connInfo.connectionInfo.aiExch) {
+					case(CALG_RSA_KEYX): output.secinfo["key_exch"] = "RSA key exchange"; break;
+					case(CALG_DH_EPHEM): output.secinfo["key_exch"] = "Diffie-Hellman key exchange"; break;
+					}
+
+					if (output.secinfo["key_exch"] != "") {
+						output.secinfo["key_exch_strength"] = std::to_string(connInfo.connectionInfo.dwExchStrength);
 					}
 
 					char* cert_info_string = new char[2048];
@@ -289,14 +319,22 @@ wrap::resp wrap::HttpsRequest(std::string site, wrap::req request, std::string d
 						output.err = "InternetQueryOption failed " + GetLastError();
 						return output;
 					}
-					output.certificate = cert_info_string;
+
+					output.secinfo["certificate"] = cert_info_string;
 					delete[] cert_info_string;
 
-					//cout << output.certificate << endl;
-					//cout << output.protocol << endl;
-
 					output.raw = strResponse;
-					output.text = wrap::text_from_html(strResponse);
+					//very basic check to see if its a html doc - if yes then do some very basic parsing to try to get the text content
+					std::string doctype = strResponse.substr(0, 14);
+					std::transform(doctype.begin(), doctype.end(), doctype.begin(), ::tolower);
+					if (doctype=="<!doctype html") {
+						//std::cout << "html detected!" << std::endl;
+						output.text = wrap::text_from_html(strResponse);
+					}
+					else { //if no html found, .text = .raw
+						output.text = output.raw;
+					}
+					
 
 					return output;
 				}
