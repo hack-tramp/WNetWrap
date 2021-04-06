@@ -108,6 +108,55 @@ for (auto elem : my_response.received_headers)
 }
 ``` 
 
+## Getting security info
+
+To see the response's security info, you will need to access the `secinfo` map. For example, to get the security certificate:
+```c++
+my_response.secinfo["certificate"]
+```
+For `www.example.com` this returns:
+```
+Subject:
+US
+California
+Los Angeles
+Internet Corporation for Assigned Names and Numbers
+www.example.org
+Issuer:
+US
+DigiCert Inc
+DigiCert TLS RSA SHA256 2020 CA1
+Effective Date: 24/11/2020 00:00:00
+Expiration Date:        25/12/2021 23:59:59
+Security Protocol:      (null)
+Signature Type: (null)
+Encryption Type:        (null)
+Privacy Strength:       High (128 bits)
+cipher : AES 128-bit encryption algorithm
+```
+Due to WinInet limitations, some data such as the protocol and encryption type may appear as `(null)` - however this may be found in other parts of the certificate, such as under `Issuer` above. This can also be found as one of several additional elements in the `secinfo` map:
+```c++
+cout << my_response.secinfo["protocol"]; // for example.com : Transport Layer Security 1.2 client-side 
+```
+Cycling through the `secinfo` map will show all other available security info:
+```c++ 
+cout << "security info:" << endl;
+for (auto elem : my_response.secinfo)
+{
+	cout << elem.first + " : " + elem.second + "\r\n";
+}
+``` 
+This gives the map keys and values (I've omitted the certificate):
+```
+cipher : AES 128-bit encryption algorithm
+cipher_strength : 128
+hash : SHA hashing algorithm
+hash_strength : 128
+key_exch : RSA key exchange
+key_exch_strength : 2048
+protocol : Transport Layer Security 1.2 client-side
+```
+
 ## HTTP POST request
 Here we are sending a POST request with JSON data `{"b":"a"}` which is then echoed back to us:<br>
 ```c++ 
