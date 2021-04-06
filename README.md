@@ -18,6 +18,7 @@ int main()
 	req my_request; //GET method and firefox user agent used by default
 	resp my_response = HttpsRequest("https://www.example.com/", my_request);
 	cout << my_response.text << endl; //very basic html parser
+	cout << my_response.status_code << endl; // 200
  }
   ```
  
