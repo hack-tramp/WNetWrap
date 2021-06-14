@@ -1,6 +1,6 @@
 # WNetWrap  [![MSBuild](https://github.com/hack-tramp/wnetwrap/actions/workflows/msbuild.yml/badge.svg)](https://github.com/hack-tramp/wnetwrap/actions/workflows/msbuild.yml) [![Generic Badge](https://img.shields.io/badge/c%2B%2B-14-blue)](https://github.com/topics/c-plus-plus-11)  [![License: MIT](https://img.shields.io/badge/License-MIT-red.svg)](https://opensource.org/licenses/MIT)<br>
   
-A tiny, dependency-free library using [WinINet](https://docs.microsoft.com/en-us/windows/win32/wininet/about-wininet) for HTTP(S) requests in C++. This is for developers targeting Windows only, who need a lightweight HTTPS solution that doesn't use additional libraries.
+A tiny, dependency-free wrapper around [WinINet](https://docs.microsoft.com/en-us/windows/win32/wininet/about-wininet) for developers targeting Windows only, who need a lightweight native solution. Inspired by the excellent [CPR library](https://github.com/whoshuu/cpr), it has similar function names, and will likewise work with random parameter order.
 
 ## Basic HTTP GET request
 
@@ -13,29 +13,38 @@ using namespace std;
 
 int main()
 {
-	req my_request; //GET method and firefox user agent used by default
-	resp my_response = HttpsRequest("https://www.example.com/", my_request);
-	cout << my_response.text << endl; //very basic html parser
-	cout << my_response.status_code << endl; // 200
+	Response r; //GET method and firefox user agent used by default
+	r = HttpsRequest(Url{"https://www.example.com/"});
+	cout << r.text << endl; //very basic html parser
+	cout << r.status_code << endl; // 200
  }
   ```
  
-URL query parameters can be passed as normal - here is a Google search as an example:
+## Features
+* Custom headers
+* Url encoded parameters
+* Url encoded POST values
+* Multipart form POST upload
+* File POST upload
+* Basic authentication
 
+## Usage
+
+Just put `wnetwrap.h` and `wnetwrap.cpp` in your project folder. That's it!
+
+## Documentation
+
+For now its all here on the readme. (will eventually be put on a different page)
+
+### Downloading a file
+
+To download the contents of the request you simply add a `Download` parameter to `HttpsRequest`. If this parameter's value is blank then the file is downloaded with its original filename, otherwise the value provided will be the new file's name. For example, to download the CPR library: <br>
 ```c++
-HttpsRequest("https://www.google.com/search?q=testing+123", my_request);
-```
-
-
-## Downloading a file
-
-To download the contents of the request you simply add a third parameter to `HttpsRequest`. If this parameter is `"dl"` then the file is downloaded with its original filename, otherwise the value provided will be the new file's name. For example, to download the CPR library: <br>
-```c++
-HttpsRequest("https://github.com/whoshuu/cpr/archive/refs/tags/1.6.0.zip", my_request, "dl");
+HttpsRequest(Url{ "https://github.com/whoshuu/cpr/archive/refs/tags/1.6.0.zip" }, Download{});
 ```
 When you download a file, the `.raw` and `.text` properties of the response object will be returned empty.
 
-## Preparing the request
+### Preparing the request
 
 The `req` request object can be used for the following (all inputs are strings)
 
