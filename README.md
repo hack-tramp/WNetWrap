@@ -1,8 +1,6 @@
-# WNetWrap  [![MSBuild](https://github.com/hack-tramp/wnetwrap/actions/workflows/msbuild.yml/badge.svg)](https://github.com/hack-tramp/wnetwrap/actions/workflows/msbuild.yml) [![Generic Badge](https://img.shields.io/badge/c%2B%2B-11-blue)](https://github.com/topics/c-plus-plus-11) [![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://github.com/hack-tramp/wnetwrap/blob/main/LICENSE)<br>
+# WNetWrap  [![MSBuild](https://github.com/hack-tramp/wnetwrap/actions/workflows/msbuild.yml/badge.svg)](https://github.com/hack-tramp/wnetwrap/actions/workflows/msbuild.yml) [![Generic Badge](https://img.shields.io/badge/c%2B%2B-14-blue)](https://github.com/topics/c-plus-plus-11)  [![License: MIT](https://img.shields.io/badge/License-MIT-red.svg)](https://opensource.org/licenses/MIT)<br>
   
-A tiny library using [WinInet](https://docs.microsoft.com/en-us/windows/win32/wininet/about-wininet) for HTTP(S) requests in C++. As WinInet is a native windows library, there are no dependencies, and WNetWrap is very lightweight compared to other libraries like [CPR](https://github.com/whoshuu/cpr).
-
-This repo uses MS Visual Studio for the example, but *you don't need that to use WNetWrap* - all you need to do is put the `wnetwrap.h` and `wnetwrap.cpp` in your project folder, and include as in the example below.
+A tiny, dependency-free library using [WinINet](https://docs.microsoft.com/en-us/windows/win32/wininet/about-wininet) for HTTP(S) requests in C++. This is for developers targeting Windows only, who need a lightweight HTTPS solution that doesn't use additional libraries.
 
 ## Basic HTTP GET request
 
@@ -18,6 +16,7 @@ int main()
 	req my_request; //GET method and firefox user agent used by default
 	resp my_response = HttpsRequest("https://www.example.com/", my_request);
 	cout << my_response.text << endl; //very basic html parser
+	cout << my_response.status_code << endl; // 200
  }
   ```
  
@@ -38,11 +37,11 @@ When you download a file, the `.raw` and `.text` properties of the response obje
 
 ## Preparing the request
 
-The `req` request object is used and can be used for the following (all inputs are strings)
+The `req` request object can be used for the following (all inputs are strings)
 
 **Specifying the HTTP method**<br>
 ```c++ 
-req my_request; my_request.method = "GET";
+req my_request; my_request.method = "GET"; // already set to GET by default 
 ```
 
 **Setting the user agent**
@@ -74,15 +73,11 @@ my_request.postdata = "{\"b\":\"a\"}"
 ```
 
 ## Handling the response
-<br>
-
+ 
 **Retrieving the headers**
-
-<br>
 
 The response is stored into a `resp` object. To get info from the headers received use `get_header("header_field")`
 
-<br>
 
 ```c++
 resp my_response = HttpsRequest("https://www.example.com/", my_request);
@@ -112,6 +107,55 @@ for (auto elem : my_response.received_headers)
 	cout << elem.first + " : " + elem.second + "\r\n";
 }
 ``` 
+
+## Getting security info
+
+To see the response's security info, you will need to access the `secinfo` map. For example, to get the security certificate:
+```c++
+my_response.secinfo["certificate"]
+```
+For `www.example.com` this returns:
+```
+Subject:
+US
+California
+Los Angeles
+Internet Corporation for Assigned Names and Numbers
+www.example.org
+Issuer:
+US
+DigiCert Inc
+DigiCert TLS RSA SHA256 2020 CA1
+Effective Date: 24/11/2020 00:00:00
+Expiration Date:        25/12/2021 23:59:59
+Security Protocol:      (null)
+Signature Type: (null)
+Encryption Type:        (null)
+Privacy Strength:       High (128 bits)
+cipher : AES 128-bit encryption algorithm
+```
+Due to WinInet limitations, some data such as the protocol and encryption type may appear as `(null)` - however this may be found in other parts of the certificate, such as under `Issuer` above. This can also be found as one of several additional elements in the `secinfo` map:
+```c++
+cout << my_response.secinfo["protocol"]; // example.com: Transport Layer Security 1.2 client-side 
+```
+Cycling through the `secinfo` map will show all other available security info:
+```c++ 
+cout << "security info:" << endl;
+for (auto elem : my_response.secinfo)
+{
+	cout << elem.first + " : " + elem.second + "\r\n";
+}
+``` 
+This gives the map keys and values (I've omitted the certificate):
+```
+cipher : AES 128-bit encryption algorithm
+cipher_strength : 128
+hash : SHA hashing algorithm
+hash_strength : 128
+key_exch : RSA key exchange
+key_exch_strength : 2048
+protocol : Transport Layer Security 1.2 client-side
+```
 
 ## HTTP POST request
 Here we are sending a POST request with JSON data `{"b":"a"}` which is then echoed back to us:<br>
