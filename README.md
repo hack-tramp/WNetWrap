@@ -2,7 +2,7 @@
   
 A tiny, dependency-free wrapper around [WinINet](https://docs.microsoft.com/en-us/windows/win32/wininet/about-wininet) for developers targeting Windows only, who need a lightweight native solution. Inspired by the excellent [CPR library](https://github.com/whoshuu/cpr), it has similar function names, and will likewise work with random parameter order.
 
-## Basic HTTP GET request
+Below is a basic GET request - for detailed examples see the documentation below.
 
 ```c++
 #include <iostream>
