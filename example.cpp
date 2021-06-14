@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 
 #include "wnetwrap.h"
 
@@ -8,34 +8,38 @@ using namespace std;
 int main()
 {
 
-	req my_request; //GET method used by default
-					
+	/*
+	cout << "status code: " + r.status_code << endl;
+	cout << r.text << endl;
+	cout << "received header:" << endl;
+	cout << r.header["content-type"] << endl;
 
-	my_request.set_header( "Connection" , "keep-alive" );
-	my_request.set_header("Referer", "bla.com");
-	my_request.clear_headers("Referer");
+	cout << "sent headers map:" << endl;
+	for (auto elem : r.sent_headers)
+	{
+		cout << elem.first + " : " + elem.second + "\r\n";
+	}
+*/
+	//HttpsRequest(Url{ "https://github.com/whoshuu/cpr/archive/refs/tags/1.6.0.zip" }, Download{});
 
-	resp my_response = HttpsRequest("https://example.com", my_request);
-	
-	cout << "security protocol: " + my_response.protocol << endl;
-	cout << endl << "sent headers map:" << endl;
-	for (auto elem : my_request.headers)
-	{
-		cout << elem.first + " : " + elem.second + "\r\n";
-	}
-	cout << endl << "sent headers map:" << endl;
-	for (auto elem : my_response.sent_headers)
-	{
-		cout << elem.first + " : " + elem.second + "\r\n";
-	}
-	cout << endl << "recd headers map:" << endl;
-	for (auto elem : my_response.received_headers)
-	{
-		cout << elem.first + " : " + elem.second + "\r\n";
-	}
-	cout << my_response.text << endl;
-	//cout << "recd header: " + my_response.get_header("Referer") << std::endl;
-	//cout << "sent header: " + my_response.get_header("ReferEr", "sent") << std::endl;
+	Response r;
+	r = HttpsRequest(Url{ "www.postman-echo.com/get" }, Header{ {"Referer","www.bla.com"},{"Content-Type","*/*"} }, Parameters{ {"fruit","mango"},{"price","£3"} });
+	cout << endl << r.text << endl;
+
+	//posting raw data - does not get url encoded
+	r = HttpsRequest(Url{ "www.postman-echo.com/post" }, Body{ "£" }, Method{ "POST" });
+	cout << endl << r.text << endl;
+	//url form encode - key value pairs
+	r = HttpsRequest(Url{ "www.httpbin.org/post" }, Payload{ {"name","习近平"} }, Method{ "POST" });
+	cout << endl << r.text << endl;
+
+	//note: to upload to file.io do not use www in url, and always use filename file
+	r = HttpsRequest(Url{ "file.io" }, Multipart{ {"file:file","sample.txt"} }, Method{ "POST" });
+	cout << endl << r.text << endl;
+
+	r = HttpsRequest(Url{ "https://www.httpbin.org/basic-auth/user/passwd" }, Authentication{  "user","passwd"  });
+	cout << endl << r.text << endl;
+
 /*
 	my_request.method = "POST";
 	my_request.set_header("Content-Type:", "application/json");
@@ -57,7 +61,7 @@ int main()
 	}
 
 	*/
-	Sleep(60000);
+	system("PAUSE");
 	return 0;
 }
 
