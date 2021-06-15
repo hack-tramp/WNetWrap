@@ -12,10 +12,9 @@ using namespace wrap;
 using namespace std;
 
 int main()
-{
-	Response r; //GET method and firefox user agent used by default
-	r = HttpsRequest(Url{"https://www.example.com/"});
-	cout << r.text << endl; //very basic html parser
+{	//GET method and firefox user agent used by default
+	Response r = HttpsRequest(Url{"https://www.example.com/"}); 
+	cout << r.text << endl; // basic parser
 	cout << r.status_code << endl; // 200
  }
   ```
