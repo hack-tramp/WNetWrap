@@ -26,6 +26,7 @@ int main()
 * Multipart form POST upload
 * File POST upload
 * Basic authentication
+* Bearer authentication
 
 ## Usage
 
@@ -34,6 +35,7 @@ Just put `wnetwrap.h` and `wnetwrap.cpp` in your project folder. That's it!
 ## Documentation
 
 For now its all here on the readme. (will eventually be put on a different page)
+->in the process of being updated
 
 ### Downloading a file
 
