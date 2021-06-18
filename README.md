@@ -178,7 +178,7 @@ file.io/JBDaFwjAneQH","private":false,"expires":"2021-07-02T16:55:52.042Z","down
 :53,"mimeType":"text/plain","created":"2021-06-18T16:55:52.042Z","modified":"2021-06-18T16:55:52.042Z"}
  */
 ```
-Notice how the textfile which in this case was passed as sample1, had `file:` prefixed before it - this tells WNetWrap that this is a file and not a key - value pair.
+Notice how the text file, which in this case was passed as `sample1`, had `file:` prefixed before it - this tells WNetWrap that this is a file and not a key - value pair.
 
 
 ## Handling the Response object
