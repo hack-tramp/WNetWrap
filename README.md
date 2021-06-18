@@ -117,8 +117,73 @@ HttpsRequest(Url{ "https://github.com/whoshuu/cpr/archive/refs/tags/1.6.0.zip" }
 ```
 When you download a file, the `.raw` and `.text` properties of the response object will be returned empty.
 
+### POST Requests
 
-## Handling the response
+Making a POST request is just a matter of specifying the HTTP method:
+```c++
+wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/post"},
+                   wrap::Payload{{"key", "value"}}, wrap::Method{"POST"});
+std::cout << r.text << std::endl;
+
+/*
+ * {
+ *   "args": {},
+ *   "data": "",
+ *   "files": {},
+ *   "form": {
+ *     "key": "value"
+ *   },
+ *   "headers": {
+ *     ..
+ *     "Content-Type": "application/x-www-form-urlencoded",
+ *     ..
+ *   },
+ *   "json": null,
+ *   "url": "http://www.httpbin.org/post"
+ * }
+ */
+```
+This sends up `"key=value"` as a `"x-www-form-urlencoded"` pair in the POST request. To send data raw and unencoded, use `Body` instead of `Payload`:
+```c++
+wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/post"},
+                   wrap::Body{"This is raw POST data"},
+                   wrap::Header{{"Content-Type", "text/plain"}},
+		   wrap::Method{"POST"});
+std::cout << r.text << std::endl;
+
+/*
+ * {
+ *   "args": {},
+ *   "data": "This is raw POST data",
+ *   "files": {},
+ *   "form": {},
+ *   "headers": {
+ *     ..
+ *     "Content-Type": "text/plain",
+ *     ..
+ *   },
+ *   "json": null,
+ *   "url": "http://www.httpbin.org/post"
+ * }
+ */
+```
+If the data package is large or contains a file, it’s more appropriate to use a Multipart upload. In this example we are uploading a textfile to file.io.
+```c++
+wrap::Response r = wrap::HttpsRequest(wrap::Url{ "file.io" },
+				      wrap::Multipart{ {"file:sample1","sample.txt"} }, 
+			              wrap::Method{ "POST" });
+std::cout << r.text << std::endl;
+
+/*
+{"success":true,"status":200,"id":"0a1dc4a0-d056-11eb-b8a8-95e106f75f99","key":"JBDaFwjAneQH","name":"sample.txt","link":"https://
+file.io/JBDaFwjAneQH","private":false,"expires":"2021-07-02T16:55:52.042Z","downloads":0,"maxDownloads":1,"autoDelete":true,"size"
+:53,"mimeType":"text/plain","created":"2021-06-18T16:55:52.042Z","modified":"2021-06-18T16:55:52.042Z"}
+ */
+```
+Notice how the textfile which in this case was passed as sample1, had `file:` prefixed before it - this tells WNetWrap that this is a file and not a key - value pair.
+
+
+## Handling the Response object
  
 **Retrieving the headers**
 
@@ -201,27 +266,6 @@ hash_strength : 128
 key_exch : RSA key exchange
 key_exch_strength : 2048
 protocol : Transport Layer Security 1.2 client-side
-```
-
-## HTTP POST request
-Here we are sending a POST request with JSON data `{"b":"a"}` which is then echoed back to us:<br>
-```c++ 
-my_request.method = "POST";
-my_request.set_header("Content-Type:", "application/json");
-my_request.postdata = "{\"b\":\"a\"}";
-my_response = HttpsRequest("https://postman-echo.com/post", my_request);
-
-cout << my_response.raw << endl;
-``` 
-
-Note that we are outputting the response without parsing anything, using 
-```c++
-my_response.raw
-```
-<br> The result should be something like this: <br>
-
-```
-{"args":{},"data":{"b":"a"},"files":{},"form":{},"headers":{"x-forwarded-proto":"https","x-forwarded-port":"443","host":"postman-echo.com","x-amzn-trace-id":"Root=1-60634f18-2270c652666720526210e242","content-length":"9","accept":"*/*, */*","connection ":"keep-alive","content-type":"application/json","referer ":"my.bla.com","user-agent":"Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0","cache-control":"no-cache"},"json":{"b":"a"},"url":"https://postman-echo.com/post"}
 ```
 
   
