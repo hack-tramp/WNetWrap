@@ -8,14 +8,11 @@ Below is a basic GET request - for detailed examples see the documentation below
 #include <iostream>
 #include "wnetwrap.h"
 
-using namespace wrap;
-using namespace std;
-
 int main()
 {	//GET method and firefox user agent used by default
-	Response r = HttpsRequest(Url{"https://www.example.com/"}); 
-	cout << r.text << endl; // basic parser
-	cout << r.status_code << endl; // 200
+	wrap::Response r = wrap::HttpsRequest(wrap::Url{"https://www.example.com/"}); 
+	std::cout << r.text << std::endl; // basic parser
+	std::cout << r.status_code << std::endl; // 200
  }
   ```
  
@@ -113,7 +110,7 @@ std::cout << r_outside.text << std::endl; // Same text response as above
 
 To download the contents of the request you simply add a `Download` parameter to `HttpsRequest`. If this parameter's value is blank then the file is downloaded with its original filename, otherwise the value provided will be the new file's name. For example, to download the CPR library: <br>
 ```c++
-HttpsRequest(Url{ "https://github.com/whoshuu/cpr/archive/refs/tags/1.6.0.zip" }, Download{});
+wrap::HttpsRequest(wrap::Url{ "https://github.com/whoshuu/cpr/archive/refs/tags/1.6.0.zip" }, wrap::Download{});
 ```
 When you download a file, the `.raw` and `.text` properties of the response object will be returned empty.
 
