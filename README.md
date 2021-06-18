@@ -27,6 +27,7 @@ int main()
 * File POST upload
 * Basic authentication
 * Bearer authentication
+* Connection and request timeout 
 
 ## Usage
 
@@ -37,6 +38,78 @@ Just put `wnetwrap.h` and `wnetwrap.cpp` in your project folder. That's it!
 For now its all here on the readme. (will eventually be put on a different page)
 ->in the process of being updated
 
+### GET requests
+
+Making a GET request with cpr is simple - the GET method is used by default so doesn't need to be specified:
+
+```c++
+#include <wnetwrap.h>
+wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/get"});
+```
+This gives us a Response object which we’ve called r. There’s a lot of good stuff in there:
+```c++
+std::cout << r.url << std::endl; // http://www.httpbin.org/get
+std::cout << r.status_code << std::endl; // 200
+std::cout << r.header["content-type"] << std::endl; // application/json
+std::cout << r.text << std::endl;
+
+/*
+ * {
+ *   "args": {},
+ *   "headers": {
+ *     ..
+ *   },
+ *   "url": "http://httpbin.org/get"
+ * }
+ */
+```
+To add URL-encoded parameters, throw in a Parameters object to the HttpsRequest call:
+```c++
+wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/get"},
+                  wrap::Parameters{{"hello", "world"}});
+std::cout << r.url << std::endl; // http://www.httpbin.org/get?hello=world
+std::cout << r.text << std::endl;
+
+/*
+ * {
+ *   "args": {
+ *     "hello": "world"
+ *   },
+ *   "headers": {
+ *     ..
+ *   },
+ *   "url": "http://httpbin.org/get?hello=world"
+ * }
+ */
+```
+Parameters is an object with a map-like interface. You can construct it using a list of key/value pairs inside the Get method or have it outlive Get by constructing it outside:
+```c++
+// Constructing it in place
+wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/get"},
+                  wrap::Parameters{{"hello", "world"}, {"stay", "cool"}});
+std::cout << r.url << std::endl; // http://www.httpbin.org/get?hello=world&stay=cool
+std::cout << r.text << std::endl;
+
+/*
+ * {
+ *   "args": {
+ *     "hello": "world"
+ *     "stay": "cool"
+ *   },
+ *   "headers": {
+ *     ..
+ *   },
+ *   "url": "http://httpbin.org/get?hello=world&stay=cool"
+ * }
+ */
+
+ // Constructing it outside
+wrap::Parameters parameters = wrap::Parameters{{"hello", "world"}, {"stay", "cool"}};
+wrap::Response r_outside = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/get"}, parameters);
+std::cout << r_outside.url << std::endl; // http://www.httpbin.org/get?hello=world&stay=cool
+std::cout << r_outside.text << std::endl; // Same text response as above
+```
+
 ### Downloading a file
 
 To download the contents of the request you simply add a `Download` parameter to `HttpsRequest`. If this parameter's value is blank then the file is downloaded with its original filename, otherwise the value provided will be the new file's name. For example, to download the CPR library: <br>
@@ -45,48 +118,12 @@ HttpsRequest(Url{ "https://github.com/whoshuu/cpr/archive/refs/tags/1.6.0.zip" }
 ```
 When you download a file, the `.raw` and `.text` properties of the response object will be returned empty.
 
-### Preparing the request
-
-The `req` request object can be used for the following (all inputs are strings)
-
-**Specifying the HTTP method**<br>
-```c++ 
-req my_request; my_request.method = "GET"; // already set to GET by default 
-```
-
-**Setting the user agent**
- 
-Firefox is used by default but you can specify your own, for example an Apple iPhone XR (Safari):<br>
-```c++ 
-my_request.ua = "Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1";
-```
-
-
-**Setting a header:**<br>
-```c++ 
-my_request.set_header( "Referer" , "my.referer.com" );
-```
-<br>
-
-**Updating a header**
- 
-Note that as HTTP header fields are case-insensitive, they will always be stored and sent in lowercase - this means this will still work:<br>
-```c++ 
-my_request.set_header("RefErEr", "my.bla.com");
-``` 
-
-**Posting data**
- 
-If you are sending data via POST you can set the data like this:<br>
-```c++ 
-my_request.postdata = "{\"b\":\"a\"}"
-```
 
 ## Handling the response
  
 **Retrieving the headers**
 
-The response is stored into a `resp` object. To get info from the headers received use `get_header("header_field")`
+The response is stored into a `Response` object. To get info from the headers received use `get_header("header_field")`
 
 
 ```c++
