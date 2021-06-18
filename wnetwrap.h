@@ -3,7 +3,11 @@ fix: accept gzip data... see this async wrapper that does it: https://www.codepr
 fix: HttpOpenRequestA and HttpSendRequestA seem to work passing utf-8 params even though the docs recommend always using the W commands
 
 notes
-in url only query params, not host / path is url encoded
+- in url only query params, not host / path is url encoded
+- due to MS bug timeout is done via worker thread, this means it cant be increased beyond MS default
+also timeouts might cause memory leaks, are all threads, pointers, structs, vars etc deleted/freed? 
+according to this SO thread no need to delete or free unless new or malloc called https://stackoverflow.com/questions/5243360/how-to-free-memory-for-structure-variable
+should smart pointers be used in the workers? the docs mainly talk about cases where new is used https://docs.microsoft.com/en-us/cpp/cpp/smart-pointers-modern-cpp?view=msvc-160
 
 fixed: post data size limit - fixed by converting postdata string to char array before sending
 */
@@ -95,6 +99,14 @@ namespace wrap {
 		std::string pwd;
 	};
 
+	struct Bearer {
+		std::string token;
+	};
+
+	struct Timeout {
+		DWORD timeout;
+		std::string type = "connection"; // connection or request
+	};
 
 	struct req {
 		std::map<std::string, std::string> headers;
@@ -152,11 +164,12 @@ namespace wrap {
 		std::string Cookies;
 		std::string Dl;
 		std::string Proxies;
-		std::string TimeOut;
 		std::string Method = "GET";
 		std::string Auth;
 		std::string Url = "www.example.com";
 		Header Header = { {"",""} };
+		DWORD TimeoutConnect = 0;
+		DWORD TimeoutRequest = 0;
 		void reset() {
 			ua = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0";
 			Params = "";
@@ -164,11 +177,12 @@ namespace wrap {
 			Cookies = "";
 			Dl = "";
 			Proxies = "";
-			TimeOut = "";
 			Method = "GET";
 			Auth = "";
 			Url = "www.example.com";
 			Header = { {"",""} };
+			TimeoutConnect = 0;
+			TimeoutRequest = 0;
 		};
 	};
 
@@ -176,6 +190,7 @@ namespace wrap {
 		std::map <std::string, std::string> header;
 		std::map <std::string, std::string> sent_headers;
 		std::map <std::string, std::string> secinfo;
+		std::string url;
 		std::string raw;
 		std::string text;
 		std::string status_code;
@@ -201,6 +216,8 @@ namespace wrap {
 
 	void Params(wrap::Authentication auth);
 
+	void Params(wrap::Bearer token);
+
 	void Params(wrap::Method m);
 
 	void Params(wrap::Download dl);
@@ -208,6 +225,8 @@ namespace wrap {
 	void Params(wrap::Body body);
 
 	void Params(wrap::File file);
+
+	void Params(wrap::Timeout timeout);
 
 	// url, headers, params, postdata, cookies, dl flag, proxies, timeout, method, auth 
 	Response httpsreq(req Request);

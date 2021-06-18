@@ -2,6 +2,20 @@
 #pragma comment(lib, "Wininet.lib")
 #pragma comment( lib, "urlmon" )
 
+DWORD WINAPI WorkerInternetConnect(LPVOID);
+DWORD WINAPI WorkerInternetRequest(LPVOID);
+struct TPARAMS {
+	HINTERNET hInternet = NULL;
+	HINTERNET hInternetOut = NULL; //returned handle
+	std::string host = "";
+	INTERNET_PORT port = 0;
+	DWORD service = 0;
+};
+struct TRPARAMS { 
+	HINTERNET hRequest = NULL;
+	BOOL res = NULL;
+	std::string headers = "";
+};
 
 wrap::req wrap::toSource;
 
@@ -217,12 +231,24 @@ void wrap::Params(wrap::Multipart mp) {
 }
 
 void wrap::Params(wrap::Authentication auth) {
-
 	std::string basicauth = auth.usr + ":" + auth.pwd;
 	basicauth = base64_encode(basicauth);
 	wrap::toSource.Header.hdr["Authorization"] = "Basic " + basicauth;
 }
 
+void wrap::Params(wrap::Bearer token) { //https://www.oauth.com/oauth2-servers/making-authenticated-requests/
+	wrap::toSource.Header.hdr["Authorization"] = "Bearer " + token.token;
+}
+
+void wrap::Params(wrap::Timeout timeout) {
+	
+	if (timeout.type == "connection") {
+		wrap::toSource.TimeoutConnect = timeout.timeout;
+	}
+	else {
+		wrap::toSource.TimeoutRequest = timeout.timeout;
+	}
+}
 
 wrap::Response wrap::httpsreq(wrap::req request) {
 	wrap::Response output;
@@ -235,10 +261,12 @@ wrap::Response wrap::httpsreq(wrap::req request) {
 	}
 	else
 	{
+
 		//do some very basic URI parsing to separate host (for InternetConnect) from path (used in HttpOpenRequest)
 		//also to see what protocol is specified
 		std::string host, path, scheme, urlfile = "";
 
+		output.url = request.Url;
 		//scheme and host
 		host = request.Url;
 		if (host.find("://") != std::string::npos) { //get scheme if available
@@ -308,7 +336,65 @@ wrap::Response wrap::httpsreq(wrap::req request) {
 		}
 		//std::cout << port << std::endl;//std::cout << service << std::endl;
 		//std::cout << "host: "+host << std::endl << "path: "+path << std::endl << "scheme: "+scheme << std::endl << "file: " + urlfile << std::endl << "input url: " + site << std::endl;
-		HINTERNET hConnect = InternetConnectA(hInternet, host.c_str(), port, NULL, NULL, service, 0, NULL);
+		HINTERNET hConnect = NULL;
+		if (wrap::toSource.TimeoutConnect == 0) { //if no timeout set then just do normal call
+			hConnect = InternetConnectA(hInternet, host.c_str(), port, NULL, NULL, service, 0, NULL);
+		} else { //if timeout set then use threads due to MS bug https://mskb.pkisolutions.com/kb/224318
+			TPARAMS params;
+			params.hInternet = hInternet;
+			params.host = host;
+			params.port = port;
+			params.service = service;
+			HANDLE hThread;
+			hThread = CreateThread(
+				NULL,            // Pointer to thread security attributes 
+				0,               // Initial thread stack size, in bytes 
+				WorkerInternetConnect,  // Pointer to thread function 
+				&params,     // lpParameter A pointer to a variable to be passed to the thread.
+				0,               // Creation flags 
+				0      // lpThreadId A pointer to a DWORD variable that receives the thread identifier.If this parameter is NULL, the thread identifier is not returned.
+			);
+
+			if (hThread == 0) { //this is done to avoid possibility of WaitForSingleObject or GetExitCodeThread called if hThread is 0
+				output.err = "Could not create thread for timeout.";
+				return output;
+			}
+
+			// Wait for the call to InternetConnect in worker function to complete
+			if (WaitForSingleObject(hThread, wrap::toSource.TimeoutConnect) == WAIT_TIMEOUT)
+			{
+				std::cout << "Can not connect to server in " << wrap::toSource.TimeoutConnect << " milliseconds" << std::endl;
+				if (hInternet)
+					InternetCloseHandle(hInternet);
+				// Wait until the worker thread exits
+				WaitForSingleObject(hThread, INFINITE);
+				//std::cout << "Thread has exited" << std::endl;
+				output.err = "InternetConnect Thread has exited ";
+				return output;
+			}
+
+			// The state of the specified object (thread) is signaled
+			DWORD dwExitCode = 0;
+			if (!GetExitCodeThread(hThread, &dwExitCode))
+			{
+				//std::cerr << "Error on GetExitCodeThread: " << GetLastError() << std::endl;
+				output.err = "Error on GetExitCodeThread: " + GetLastError();
+				return output;
+			}
+
+			CloseHandle(hThread);
+
+			if (dwExitCode) {
+				// Worker function failed
+				//std::cout << "non 0 exit code" << std::endl;
+				output.err = "Worker function failed";
+				return output;
+			}
+			
+			hConnect = params.hInternetOut;
+
+		}
+		
 
 
 		if (hConnect == NULL)
@@ -365,8 +451,68 @@ wrap::Response wrap::httpsreq(wrap::req request) {
 					//std::cout << "charpost data:" << std::endl;
 					//std::cout << &wrap::toSource.PostData[0] << '\n';
 				}
-				//sending data as bytes (c string) to ensure files e.g. images or zip files get transfered ok - see here: https://stackoverflow.com/a/16502000/13666347
-				BOOL sendr = HttpSendRequestA(hRequest, final_headers.c_str(), -1L, &wrap::toSource.PostData[0], sizeof(char)* wrap::toSource.PostData.size());
+
+				BOOL sendr = NULL;
+
+				if (wrap::toSource.TimeoutRequest == 0) { //if no timeout set then just do normal call 
+					//sending data as bytes (c string) to ensure files e.g. images or zip files get transfered ok - see here: https://stackoverflow.com/a/16502000/13666347
+					sendr = HttpSendRequestA(hRequest, final_headers.c_str(), -1L, &wrap::toSource.PostData[0], sizeof(char) * wrap::toSource.PostData.size());
+				}
+				else { //if timeout set then use threads due to MS bug https://mskb.pkisolutions.com/kb/224318
+					TRPARAMS rparams;
+					rparams.hRequest = hRequest;
+					rparams.headers = final_headers;
+					HANDLE rhThread;
+					rhThread = CreateThread(
+						NULL,            // Pointer to thread security attributes 
+						0,               // Initial thread stack size, in bytes 
+						WorkerInternetRequest,  // Pointer to thread function 
+						&rparams,     // lpParameter A pointer to a variable to be passed to the thread.
+						0,               // Creation flags 
+						0      // lpThreadId A pointer to a DWORD variable that receives the thread identifier.If this parameter is NULL, the thread identifier is not returned.
+					);
+
+					if (rhThread == 0) { //this is done to avoid possibility of WaitForSingleObject or GetExitCodeThread called if hThread is 0
+						output.err = "Could not create thread for timeout.";
+						return output;
+					}
+
+					// Wait for the call to InternetConnect in worker function to complete
+					if (WaitForSingleObject(rhThread, wrap::toSource.TimeoutRequest) == WAIT_TIMEOUT)
+					{
+						std::cout << "Can not send request to server in " << wrap::toSource.TimeoutRequest << " milliseconds" << std::endl;
+						if (hInternet)
+							InternetCloseHandle(hInternet);
+						// Wait until the worker thread exits
+						WaitForSingleObject(rhThread, INFINITE);
+						//std::cout << "Thread has exited" << std::endl;
+						output.err = "InternetConnect Thread has exited ";
+						return output;
+					}
+
+					// The state of the specified object (thread) is signaled
+					DWORD dwExitCode = 0;
+					if (!GetExitCodeThread(rhThread, &dwExitCode))
+					{
+						//std::cerr << "Error on GetExitCodeThread: " << GetLastError() << std::endl;
+						output.err = "Error on GetExitCodeThread: " + GetLastError();
+						return output;
+					}
+
+					CloseHandle(rhThread);
+
+					if (dwExitCode) {
+						// Worker function failed
+						//std::cout << "non 0 exit code" << std::endl;
+						output.err = "Worker function failed";
+						return output;
+					}
+
+					sendr = rparams.res;
+
+				}
+				
+				
 				if (!sendr)
 				{
 					output.err = "HttpSendRequest failed with error code " + GetLastError();
@@ -595,6 +741,42 @@ wrap::Response wrap::httpsreq(wrap::req request) {
 }
 template <typename... Ts>
 wrap::Response wrap::HttpsRequest(Ts&& ...args);
+
+
+/////////////////// WorkerFunctions ////////////////////// 
+DWORD WINAPI WorkerInternetConnect(IN LPVOID vThreadParm) // https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms686736(v=vs.85)
+{
+	TPARAMS* params;
+	params = (TPARAMS*)vThreadParm;
+	HINTERNET g_hConnect = 0;
+	if (!(g_hConnect = InternetConnectA(params->hInternet, params->host.c_str(), params->port, NULL, NULL, params->service, 0, NULL)))
+	{
+		//std::cerr << "Error on InternetConnnect: " << GetLastError() << std::endl;
+		return 1; // failure
+	}
+	else {
+		//std::cout << "Connected OK" << std::endl;
+		params->hInternetOut = g_hConnect;
+	}
+	return 0;  // success
+}
+
+DWORD WINAPI WorkerInternetRequest(IN LPVOID vThreadParm) // https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms686736(v=vs.85)
+{
+	TRPARAMS* params;
+	params = (TRPARAMS*)vThreadParm;
+	BOOL g_hConnect = false; 
+	if (!(g_hConnect = HttpSendRequestA(params->hRequest, params->headers.c_str(), -1L, &wrap::toSource.PostData[0], sizeof(char) * wrap::toSource.PostData.size())))
+	{
+		//std::cerr << "Error on HttpSendRequestA: " << GetLastError() << std::endl;
+		return 1; // failure
+	}
+	else {
+		//std::cout << "Connected OK" << std::endl;
+		params->res = g_hConnect;
+	}
+	return 0;  // success
+}
 
 // not a proper parser
 std::string wrap::text_from_html(std::string html) {
