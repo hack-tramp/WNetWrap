@@ -119,7 +119,8 @@ When you download a file, the `.raw` and `.text` properties of the response obje
 Making a POST request is just a matter of specifying the HTTP method:
 ```c++
 wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/post"},
-                   wrap::Payload{{"key", "value"}}, wrap::Method{"POST"});
+                   wrap::Payload{{"key", "value"}}, 
+		   wrap::Method{"POST"});
 std::cout << r.text << std::endl;
 
 /*
