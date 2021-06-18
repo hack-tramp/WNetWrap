@@ -36,13 +36,13 @@ For now it's all here on the readme, but it will eventually be put on a differen
 
 ### GET requests
 
-Making a GET request with cpr is simple - the GET method is used by default so doesn't need to be specified:
+Making a GET request with WNetWrap is simple - the GET method is used by default so doesn't need to be specified:
 
 ```c++
 #include <wnetwrap.h>
 wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/get"});
 ```
-This gives us a Response object which we’ve called r. There’s a lot of good stuff in there:
+This gives us a `Response` object which we’ve called r. There’s a lot of good stuff in there:
 ```c++
 std::cout << r.url << std::endl; // http://www.httpbin.org/get
 std::cout << r.status_code << std::endl; // 200
@@ -59,7 +59,7 @@ std::cout << r.text << std::endl;
  * }
  */
 ```
-To add URL-encoded parameters, throw in a Parameters object to the HttpsRequest call:
+To add URL-encoded parameters, throw in a `Parameters` object to the `HttpsRequest` call:
 ```c++
 wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/get"},
                   wrap::Parameters{{"hello", "world"}});
@@ -78,7 +78,7 @@ std::cout << r.text << std::endl;
  * }
  */
 ```
-Parameters is an object with a map-like interface. You can construct it using a list of key/value pairs inside the Get method or have it outlive Get by constructing it outside:
+`Parameters` is an object with a map-like interface. You can construct it using a list of key/value pairs inside the `HttpsRequest` or have it outlive `HttpsRequest` by constructing it outside:
 ```c++
 // Constructing it in place
 wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/get"},
@@ -164,7 +164,7 @@ std::cout << r.text << std::endl;
  * }
  */
 ```
-If the data package is large or contains a file, it’s more appropriate to use a Multipart upload. In this example we are uploading a textfile to file.io.
+Here you will notice that the `"Content-Type"` is being set explicitly to `"text/plain"`. This is because by default, `"x-www-form-urlencoded"` is used for raw data POSTs. For cases where the data being sent up is small, either `"x-www-form-urlencoded"` or `"text/plain"` is suitable. If the data package is large or contains a file, it’s more appropriate to use a `Multipart` upload. In this example we are uploading a textfile to file.io:
 ```c++
 wrap::Response r = wrap::HttpsRequest(wrap::Url{ "file.io" },
 				      wrap::Multipart{ {"file:sample1","sample.txt"} }, 
