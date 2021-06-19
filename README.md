@@ -224,3 +224,97 @@ std::cout << r.text << std::endl;
 
 ```
 
+### Response Objects
+
+A `Response` has these public fields and methods:
+```c++
+long status_code;               // The HTTP status code for the request
+std::string raw;                // The body of the HTTP response
+std::string text;               // The text body in case of HTML response - if not HTML, same as raw above
+std::map header;                // A map of the header fields received
+std::map sent_headers;          // A map of the headers sent
+std::map secinfo;               // A map of certificate information strings (HTTPS only)
+Url url;                        // The effective URL of the ultimate request
+std::string err;                // An error string containing the error code and a message
+```
+
+### Getting security info
+
+To see the response's security info, you will need to access the `secinfo` map. For example, to get the security certificate:
+```c++
+my_response.secinfo["certificate"]
+```
+For `www.example.com` this returns:
+```
+Subject:
+US
+California
+Los Angeles
+Internet Corporation for Assigned Names and Numbers
+www.example.org
+Issuer:
+US
+DigiCert Inc
+DigiCert TLS RSA SHA256 2020 CA1
+Effective Date: 24/11/2020 00:00:00
+Expiration Date:        25/12/2021 23:59:59
+Security Protocol:      (null)
+Signature Type: (null)
+Encryption Type:        (null)
+Privacy Strength:       High (128 bits)
+cipher : AES 128-bit encryption algorithm
+```
+Due to WinInet limitations, some data such as the protocol and encryption type may appear as `(null)` - however this may be found in other parts of the certificate, such as under `Issuer` above. This can also be found as one of several additional elements in the `secinfo` map:
+```c++
+cout << my_response.secinfo["protocol"]; // example.com: Transport Layer Security 1.2 client-side 
+```
+Cycling through the `secinfo` map will show all other available security info:
+```c++ 
+cout << "security info:" << endl;
+for (auto elem : my_response.secinfo)
+{
+	cout << elem.first + " : " + elem.second + "\r\n";
+}
+``` 
+This gives the map keys and values (I've omitted the certificate):
+```
+cipher : AES 128-bit encryption algorithm
+cipher_strength : 128
+hash : SHA hashing algorithm
+hash_strength : 128
+key_exch : RSA key exchange
+key_exch_strength : 2048
+protocol : Transport Layer Security 1.2 client-side
+```
+
+### Request Headers
+
+Using `Header` in your `HttpsRequest` you can specify custom headers:
+```c++
+wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/headers"},
+                  wrap::Header{{"accept", "application/json"}});
+std::cout << r.text << std::endl;
+
+/*
+ * "headers": {
+ *   "Accept": "application/json",
+ *   "Host": "www.httpbin.org",
+ *   "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0"
+ * }
+ */
+
+```
+
+### Setting Timeouts
+
+It’s possible to set a timeout for your request if you have strict timing requirements:
+```c++
+wrap::Response r = wrap::Get(wrap::Url{"http://www.httpbin.org/get"},
+                  wrap::Timeout{1000}); // will timeout after 1000 ms
+```
+Setting the `Timeout` option sets the maximum allowed time the connection or request operation can take in milliseconds. By default a Timeout will only apply to the request itself, but you can specify either one by adding either `connection` or `request`:
+```
+wrap::Timeout{1000,"connection"}
+```
+Since WNetWrap is built on top of WinINet, it’s important to know what setting this `Timeout` does to the request. It creates a worker thread which executes the connection or request call. This thread is then monitored and killed if it takes longer than the timeout specified. The reason this approach is taken is that the normal method of setting a timeout with WinINet does not work, due to a 20+ year old MS bug. You can find out more about this workaround [here](https://mskb.pkisolutions.com/kb/224318). What it means in practical terms is that `Timeout` cannot be set to a value high than WinINet's default (currently 1 hour).
+
