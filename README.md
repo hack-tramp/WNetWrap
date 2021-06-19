@@ -228,7 +228,7 @@ std::cout << r.text << std::endl;
 
 A `Response` has these public fields and methods:
 ```c++
-long status_code;               // The HTTP status code for the request
+std::string status_code;               // The HTTP status code for the request
 std::string raw;                // The body of the HTTP response
 std::string text;               // The text body in case of HTML response - if not HTML, same as raw above
 std::map header;                // A map of the header fields received
