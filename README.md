@@ -17,6 +17,9 @@ int main()
   ```
  
 ## Features
+
+Implemented:
+
 * Custom headers
 * Url encoded parameters
 * Url encoded POST values
@@ -26,6 +29,13 @@ int main()
 * Bearer authentication
 * Connection and request timeout 
 
+Upcoming:
+
+* Cookie support
+* Asynchronous requests
+* Proxy support
+* Callbacks
+
 ## Usage
 
 Just put `wnetwrap.h` and `wnetwrap.cpp` in your project folder. That's it!
@@ -33,6 +43,9 @@ Just put `wnetwrap.h` and `wnetwrap.cpp` in your project folder. That's it!
 ## Documentation
 
 For now it's all here on the readme, but it will eventually be put on a different page.
+To navigate through it use the table of contents dropdown menu.
+
+中文文档稍后会贴在这里但是现在只有英文的，对不起。
 
 ### GET requests
 
@@ -42,7 +55,7 @@ Making a GET request with WNetWrap is simple - the GET method is used by default
 #include <wnetwrap.h>
 wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/get"});
 ```
-This gives us a `Response` object which we’ve called r. There’s a lot of good stuff in there:
+This gives us a `Response` object which we’ve called r. There’s a lot of useful stuff in there:
 ```c++
 std::cout << r.url << std::endl; // http://www.httpbin.org/get
 std::cout << r.status_code << std::endl; // 200
@@ -59,7 +72,7 @@ std::cout << r.text << std::endl;
  * }
  */
 ```
-To add URL-encoded parameters, throw in a `Parameters` object to the `HttpsRequest` call:
+To add URL-encoded parameters, add a `Parameters` object to the `HttpsRequest` call:
 ```c++
 wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/get"},
                   wrap::Parameters{{"hello", "world"}});
@@ -179,4 +192,35 @@ file.io/JBDaFwjAneQH","private":false,"expires":"2021-07-02T16:55:52.042Z","down
  */
 ```
 Notice how the text file, which in this case was passed as `sample1`, had `file:` prefixed before it - this tells WNetWrap that this is a file and not a key - value pair.
+
+### Authentication
+
+To use [Basic Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) which uses a username and password, just add `Authentication` to the call:
+```c++
+wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/basic-auth/user/pass"},
+                  wrap::Authentication{"user", "pass"});
+std::cout << r.text << std::endl;
+
+/*
+ * {
+ *   "authenticated": true,
+ *   "user": "user"
+ * }
+ */
+
+```
+Authentication via an [OAuth - Bearer Token](https://en.wikipedia.org/wiki/OAuth) can be done using the `Bearer` authentication object:
+```c++
+wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/bearer"},
+                  wrap::Bearer{"ACCESS_TOKEN"});
+std::cout << r.text << std::endl;
+
+/*
+ * {
+ *   "authenticated": true,
+ *   "token": "ACCESS_TOKEN"
+ * }
+ */
+
+```
 
