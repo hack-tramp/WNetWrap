@@ -309,7 +309,7 @@ std::cout << r.text << std::endl;
 
 It’s possible to set a timeout for your request if you have strict timing requirements:
 ```c++
-wrap::Response r = wrap::Get(wrap::Url{"http://www.httpbin.org/get"},
+wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/get"},
                   wrap::Timeout{1000}); // will timeout after 1000 ms
 ```
 Setting the `Timeout` option sets the maximum allowed time the connection or request operation can take in milliseconds. By default a Timeout will only apply to the request itself, but you can specify either one by adding either `connection` or `request`:
