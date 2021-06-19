@@ -42,7 +42,7 @@ Just put `wnetwrap.h` and `wnetwrap.cpp` in your project folder. That's it!
 
 ## Documentation
 
-For now it's all here on the readme, but it will eventually be put on a different page.
+For now it's all here on the readme, but it will eventually be put on a different page to make navigation more user friendly.
 To navigate through it use the table of contents dropdown menu.
 
 中文文档稍后会贴在这里但是现在只有英文的，对不起。
