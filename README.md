@@ -19,7 +19,7 @@ int main()
 ## Features
 
 |Implemented| Upcoming|
-|------------|----------|
+|:------------:|:----------:|
 |Custom headers|Cookie support|
 |Url encoded parameters|Proxy support|
 |Url encoded POST values|Asynchronous requests|
