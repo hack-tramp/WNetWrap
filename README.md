@@ -18,23 +18,16 @@ int main()
  
 ## Features
 
-Implemented:
-
-* Custom headers
-* Url encoded parameters
-* Url encoded POST values
-* Multipart form POST upload
-* File POST upload
-* Basic authentication
-* Bearer authentication
-* Connection and request timeout 
-
-Upcoming:
-
-* Cookie support
-* Asynchronous requests
-* Proxy support
-* Callbacks
+|Implemented| Upcoming|
+|------------|----------|
+|Custom headers|Cookie support|
+|Url encoded parameters|Proxy support|
+|Url encoded POST values|Asynchronous requests|
+|Multipart form POST upload|Callbacks|
+|File POST upload|
+|Basic authentication|
+|Bearer authentication|
+|Connection and request timeout| 
 
 ## Usage
 
