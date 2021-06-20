@@ -260,7 +260,7 @@ Setting the `Timeout` option sets the maximum allowed time the connection or req
 ```c++
 wrap::Timeout{1000,"connection"}
 ```
-Since WNetWrap is built on top of WinINet, it’s important to know what setting this `Timeout` does to the request. It creates a worker thread which executes the connection or request call. This thread is then monitored and killed if it takes longer than the timeout specified. The reason this approach is taken is that the normal method of setting a timeout with WinINet does not work, due to a 20+ year old MS bug. You can find out more about this workaround [here](https://mskb.pkisolutions.com/kb/224318). What it means in practical terms is that `Timeout` cannot be set to a value high than WinINet's default (currently 1 hour).
+Since WNetWrap is built on top of WinINet, it’s important to know what setting this `Timeout` does to the request. It creates a worker thread which executes the connection or request call. This thread is then monitored and killed if it takes longer than the timeout specified. The reason this approach is taken is that the normal method of setting a timeout with WinINet does not work, due to a 20+ year old MS bug. You can find out more about this workaround [here](https://mskb.pkisolutions.com/kb/224318). What it means in practical terms is that `Timeout` cannot be set to a value higher than WinINet's default (currently 1 hour).
 
 ### Security Certificate Info
 
