@@ -24,9 +24,9 @@ int main()
 |Url encoded parameters|Proxy support|
 |Url encoded POST values|Asynchronous requests|
 |Multipart form POST upload|Callbacks|
-|File POST upload|
-|Basic authentication|
-|Bearer authentication|
+|File POST upload|NTLM authentication|
+|Basic authentication|Digest authentication|
+|Bearer authentication|PUT, PATCH and DELETE methods|
 |Connection and request timeout| 
 
 ## Usage
