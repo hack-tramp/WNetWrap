@@ -20,14 +20,15 @@ int main()
 
 |Implemented| Upcoming|
 |:------------:|:----------:|
-|Custom headers|Cookie support|
-|Url encoded parameters|Proxy support|
-|Url encoded POST values|Asynchronous requests|
-|Multipart form POST upload|Callbacks|
-|File POST upload|NTLM authentication|
-|Basic authentication|Digest authentication|
-|Bearer authentication|PUT, PATCH and DELETE methods|
+|Custom headers|Proxy support|
+|Url encoded parameters|Asynchronous requests|
+|Url encoded POST values|Callbacks|
+|Multipart form POST upload|NTLM authentication|
+|File POST upload|Digest authentication|
+|Basic authentication|PUT, PATCH and DELETE methods|
+|Bearer authentication|
 |Connection and request timeout| 
+|Cookie support|
 
 ## Usage
 
