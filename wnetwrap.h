@@ -3,6 +3,10 @@ fix: accept gzip data... see this async wrapper that does it: https://www.codepr
 fix: HttpOpenRequestA and HttpSendRequestA seem to work passing utf-8 params even though the docs recommend always using the W commands
 
 notes
+- cookies currently only set for url without path (domain only)
+- no cookie url encoding
+- session cookies not preserved
+
 - in url only query params, not host / path is url encoded
 - due to MS bug timeout is done via worker thread, this means it cant be increased beyond MS default
 also timeouts might cause memory leaks, are all threads, pointers, structs, vars etc deleted/freed? 

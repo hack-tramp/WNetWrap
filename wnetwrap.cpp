@@ -583,6 +583,12 @@ wrap::Response wrap::httpsreq(wrap::req request) {
 									{
 										c = tolower(c);
 									}
+									//cookies are dealt with on the spot
+									if (fieldname == "set-cookie") {
+										std::string cval = token.substr(token.find(":") + 1);
+										std::string cookie_url = scheme + "://" + host;//ignoring path for now
+										InternetSetCookieA(&cookie_url[0], NULL, &cval[0]);
+									}
 									output.header.insert(std::pair<std::string, std::string>(fieldname, token.substr(token.find(":") + 1)) );
 								}
 								s.erase(0, pos + delimiter.length());
