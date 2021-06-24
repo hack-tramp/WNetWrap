@@ -228,8 +228,11 @@ std::string text;               // The text body in case of HTML response - if n
 std::map header;                // A map of the header fields received
 std::map sent_headers;          // A map of the headers sent
 std::map secinfo;               // A map of certificate information strings (HTTPS only)
-Url url;                        // The effective URL of the ultimate request
+std::string url;                // The effective URL of the ultimate request
 std::string err;                // An error string containing the error code and a message
+unsigned long uploaded_bytes;   // How many bytes have been sent to the server
+unsigned long downloaded_bytes; // How many bytes have been received from the server
+unsigned long redirect_count;   // How many redirects occurred
 ```
 
 ### Request Headers
@@ -257,7 +260,7 @@ It’s possible to set a timeout for your request if you have strict timing requ
 wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/get"},
                   wrap::Timeout{1000}); // will timeout after 1000 ms
 ```
-Setting the `Timeout` option sets the maximum allowed time the connection or request operation can take in milliseconds. By default a Timeout will only apply to the request itself, but you can specify either one by adding either `connection` or `request`:
+Setting the `Timeout` option sets the maximum allowed time the connection or request operation can take in milliseconds. By default a Timeout will only apply to the request itself, but you can specify either one by adding either `connection` or `request`, or both with `all`:
 ```c++
 wrap::Timeout{1000,"connection"}
 ```
