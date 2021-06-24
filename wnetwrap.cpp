@@ -242,10 +242,10 @@ void wrap::Params(wrap::Bearer token) { //https://www.oauth.com/oauth2-servers/m
 
 void wrap::Params(wrap::Timeout timeout) {
 	
-	if (timeout.type == "connection") {
+	if (timeout.type == "connection" || timeout.type == "all") {
 		wrap::toSource.TimeoutConnect = timeout.timeout;
 	}
-	else {
+	if (timeout.type == "request" || timeout.type == "all") {
 		wrap::toSource.TimeoutRequest = timeout.timeout;
 	}
 }
@@ -266,7 +266,6 @@ wrap::Response wrap::httpsreq(wrap::req request) {
 		//also to see what protocol is specified
 		std::string host, path, scheme, urlfile = "";
 
-		output.url = request.Url;
 		//scheme and host
 		host = request.Url;
 		if (host.find("://") != std::string::npos) { //get scheme if available
@@ -330,6 +329,8 @@ wrap::Response wrap::httpsreq(wrap::req request) {
 			path += request.Params;
 		}
 
+		output.url = scheme + "://" + host + path;
+
 		//entering dl means the file is saved as its original filename
 		if (request.Dl == "dl") {
 			request.Dl = urlfile;
@@ -369,6 +370,7 @@ wrap::Response wrap::httpsreq(wrap::req request) {
 				// Wait until the worker thread exits
 				WaitForSingleObject(hThread, INFINITE);
 				//std::cout << "Thread has exited" << std::endl;
+				wrap::toSource.reset(); //reset timeout for next request
 				output.err = "InternetConnect Thread has exited ";
 				return output;
 			}
@@ -407,7 +409,7 @@ wrap::Response wrap::httpsreq(wrap::req request) {
 			//eg path "Dir1/Dir2/Login.php?page=1" - might need leading /
 			//accept types param passed as NULL because we use the Accept header field instead
 
-			HINTERNET hRequest = HttpOpenRequestA(hConnect, request.Method.c_str(), path.c_str(), NULL , NULL, NULL, INTERNET_FLAG_SECURE, 0);
+			HINTERNET hRequest = HttpOpenRequestA(hConnect, request.Method.c_str(), path.c_str(), NULL , NULL, NULL, INTERNET_FLAG_SECURE , 0);
 
 			if (hRequest == NULL)
 			{
@@ -486,6 +488,7 @@ wrap::Response wrap::httpsreq(wrap::req request) {
 						// Wait until the worker thread exits
 						WaitForSingleObject(rhThread, INFINITE);
 						//std::cout << "Thread has exited" << std::endl;
+						wrap::toSource.reset(); //reset to remove timeout for next request
 						output.err = "InternetConnect Thread has exited ";
 						return output;
 					}
@@ -522,7 +525,8 @@ wrap::Response wrap::httpsreq(wrap::req request) {
 				{
 					std::string strResponse;
 					const int nBuffSize = 1024;
-					char buff[nBuffSize];
+					char buff[nBuffSize]; //use bytes rather than string to help with binary file downloads
+			
 					FILE* pfile = nullptr;
 					if (request.Dl != "") {
 						pfile = fopen(request.Dl.c_str(), "wb");
@@ -533,7 +537,11 @@ wrap::Response wrap::httpsreq(wrap::req request) {
 
 					while (bKeepReading && dwBytesRead != 0)
 					{
+						
 						bKeepReading = InternetReadFile(hRequest, buff, nBuffSize, &dwBytesRead);
+						if (dwBytesRead != 0) {
+							output.downloaded_bytes += dwBytesRead;
+						}
 						
 						if (pfile != nullptr) {
 							fwrite(buff, sizeof(char), dwBytesRead, pfile);
@@ -548,31 +556,41 @@ wrap::Response wrap::httpsreq(wrap::req request) {
 					}
 
 					//get headers recd
-					char* recd_headers = (char*)calloc(1, sizeof(char));
-					char* temp; //for C6308
-
+					std::string received_headers;
 					//get the size headers
-					DWORD d = 1, d2 = 0;
-					HttpQueryInfoA(hRequest, HTTP_QUERY_RAW_HEADERS_CRLF, recd_headers, &d, &d2);
-					//alloc some space for the headers
-					temp = (char*)realloc(recd_headers, d * sizeof(char)); //done to avoid C6308
+					DWORD d = 0;
 
-					if (temp != NULL) {
-						recd_headers = temp;
-					}
+					get_received_headers:
 
-					if (!HttpQueryInfoA(hRequest, HTTP_QUERY_RAW_HEADERS_CRLF, recd_headers, &d, &d2)) {
-						//error handling
+					// This call will fail on the first pass, because no buffer is allocated.
+					if (!HttpQueryInfoA(hRequest, HTTP_QUERY_RAW_HEADERS_CRLF, &received_headers[0], &d, NULL))
+					{
+						if (GetLastError() == ERROR_HTTP_HEADER_NOT_FOUND)
+						{
+							// Code to handle the case where the header isn't available.
+						}
+						else
+						{
+							// Check for an insufficient buffer.
+							if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+							{
+								received_headers.resize(d, '\0'); // Allocate the necessary buffer.
+								goto get_received_headers;// Retry the call.
+							}
+							else
+							{
+								// Error handling code.
+							}
+						}
 					}
-					else {
-						if (recd_headers != NULL) {
-							std::string s(recd_headers, d);
-							//break headers std::string into map
+					else { //no errors
+						if (received_headers != "") {
+							//break headers into map
 							std::string delimiter = "\n";
 							size_t pos = 0;
 							std::string token, fieldname;
-							while ((pos = s.find(delimiter)) != std::string::npos) {
-								token = s.substr(0, pos);
+							while ((pos = received_headers.find(delimiter)) != std::string::npos) {
+								token = received_headers.substr(0, pos);
 								if (token.find(":") != std::string::npos) { //filters out lines without :, e.g. 200 OK
 									//here we convert the header field name to lowercase
 									//NOTE: this method does NOT support UTF-8 (only ascii) 
@@ -580,53 +598,62 @@ wrap::Response wrap::httpsreq(wrap::req request) {
 									//header values are left as recd
 									fieldname = token.substr(0, token.find(":"));
 									for (auto& c : fieldname)
-									{
-										c = tolower(c);
-									}
+									{c = tolower(c);}
 									//cookies are dealt with on the spot
 									if (fieldname == "set-cookie") {
 										std::string cval = token.substr(token.find(":") + 1);
+										std::string cname = cval.substr(0, cval.find("="));
+										//std::cout <<"cookie set: "<< cname << std::endl;
 										std::string cookie_url = scheme + "://" + host;//ignoring path for now
-										InternetSetCookieA(&cookie_url[0], NULL, &cval[0]);
+										InternetSetCookieA(&cookie_url[0], &cname[0], &cval[0]); //set cookie via WinINet
+										//also save cookie value (only) into 'cookies' map obj in response
+										output.cookies.insert(std::pair<std::string, std::string>(cname, cval.substr(cval.find("=")+1, cval.find(";")- cval.find("=") - 1)));
 									}
-									output.header.insert(std::pair<std::string, std::string>(fieldname, token.substr(token.find(":") + 1)) );
+									output.header.insert(std::pair<std::string, std::string>(fieldname, token.substr(token.find(":") + 1)));
 								}
-								s.erase(0, pos + delimiter.length());
+								received_headers.erase(0, pos + delimiter.length());
 							}
 						}
 					}
 
-					free(recd_headers);
 
-					//get the headers we sent
-					char* sent_headers = (char*)calloc(1, sizeof(char));;
+					std::string sent_headers;
+					d = 0;
 
-					//get the size headers
-					d = 1;
-					d2 = 0;
-					HttpQueryInfoA(hRequest, HTTP_QUERY_RAW_HEADERS_CRLF | HTTP_QUERY_FLAG_REQUEST_HEADERS, sent_headers, &d, &d2);
+					get_sent_headers:
 
-					temp = (char*)realloc(sent_headers, d * sizeof(char)); //done to avoid C6308
-					if (temp != NULL) {
-						sent_headers = temp;
+					// This call will fail on the first pass, because no buffer is allocated.
+					if (!HttpQueryInfoA(hRequest, HTTP_QUERY_RAW_HEADERS_CRLF | HTTP_QUERY_FLAG_REQUEST_HEADERS,&sent_headers[0], &d, NULL))
+					{
+						if (GetLastError() == ERROR_HTTP_HEADER_NOT_FOUND)
+						{
+							// Code to handle the case where the header isn't available.
+						}
+						else
+						{
+							// Check for an insufficient buffer.
+							if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+							{
+								sent_headers.resize(d, '\0'); // Allocate the necessary buffer.
+								goto get_sent_headers;// Retry the call.
+							}
+							else
+							{
+								// Error handling code.
+							}
+						}
 					}
-
-
-					if (!HttpQueryInfoA(hRequest, HTTP_QUERY_RAW_HEADERS_CRLF | HTTP_QUERY_FLAG_REQUEST_HEADERS, sent_headers, &d, &d2)) {
-						//error handling
-					}
-					else {
-
-						if (sent_headers != NULL) {
+					else { //no errors
+						if (sent_headers != "") {
 							//std::cout << std::endl << sent_headers << std::endl;
-							std::string s(sent_headers, d);
+							//std::string s(sent_headers, d);
 							//break headers std::string into map
 							std::string delimiter = "\n";
 							size_t pos = 0;
 							std::string token;
-							while ((pos = s.find(delimiter)) != std::string::npos) {
+							while ((pos = sent_headers.find(delimiter)) != std::string::npos) {
 
-								token = s.substr(0, pos);
+								token = sent_headers.substr(0, pos);
 								//cout << "processing:\n" + token << endl;
 								if (token.find(":") != std::string::npos) {
 									std::string first = token.substr(0, token.find(":"));
@@ -634,20 +661,23 @@ wrap::Response wrap::httpsreq(wrap::req request) {
 									//cout << "adding: " + first +" " + second << endl;
 									//NOTE: SENT HEADER KEYS ARE RETURNED WITH A TRAILING SPACE BY WININET - RECD HEADER KEYS ARENT
 									//FOR THIS REASON FOR SENT HEADERS WE DO SUBSTR 0, token.find(":") - 1 
-									output.sent_headers.insert(std::pair<std::string, std::string>(token.substr(0, token.find(":") ), token.substr(token.find(":") + 1)));
+									output.sent_headers.insert(std::pair<std::string, std::string>(token.substr(0, token.find(":")), token.substr(token.find(":") + 1)));
 								}
-								s.erase(0, pos + delimiter.length());
+								sent_headers.erase(0, pos + delimiter.length());
 							}
 						}
 					}
-					free(sent_headers);
-					//free(temp); crashes
+
 
 					//get the status code
 					DWORD statusCode = 0;
 					DWORD length = sizeof(DWORD);
 					if (HttpQueryInfo(hRequest, HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER, &statusCode, &length, NULL)) {
 						output.status_code = std::to_string(statusCode);
+						if (statusCode==302 || statusCode==301) {
+							std::cout << "redirect" << std::endl;
+							output.redirect_count += 1;
+						}
 					}
 					else {
 						//error handling
@@ -704,18 +734,17 @@ wrap::Response wrap::httpsreq(wrap::req request) {
 						output.secinfo["key_exch_strength"] = std::to_string(connInfo.connectionInfo.dwExchStrength);
 					}
 
-					char* cert_info_string = new char[2048];
-					cert_info_string[0] = '\0';
+					std::string cert_info_string;
 					DWORD cert_info_length = 2048;
+					cert_info_string.resize(cert_info_length, '\0');
 
-					if (!InternetQueryOption(hRequest, INTERNET_OPTION_SECURITY_CERTIFICATE, cert_info_string, &cert_info_length))
+					if (!InternetQueryOptionA(hRequest, INTERNET_OPTION_SECURITY_CERTIFICATE, &cert_info_string[0], &cert_info_length))
 					{
 						output.err = "InternetQueryOption failed " + GetLastError();
 						return output;
 					}
 
 					output.secinfo["certificate"] = cert_info_string;
-					delete[] cert_info_string;
 
 					output.raw = strResponse;
 					//very basic check to see if its a html doc - if yes then do some very basic parsing to try to get the text content

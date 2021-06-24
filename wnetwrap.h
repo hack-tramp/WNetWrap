@@ -1,4 +1,14 @@
 /*
+
+todo: cookies map response
+todo: send cookies with URL encoding
+todo: preserve session until host change
+
+fix: timeout error when non timeout req after
+
+process redirects manually? to allow cookies, bytes sent/recd, and redirect count to be accurate
+fix: auto redirect or not? INTERNET_FLAG_NO_AUTO_REDIRECT https://stackoverflow.com/questions/10707325/wininet-how-to-obtain-server-url-after-301-redirect
+
 fix: accept gzip data... see this async wrapper that does it: https://www.codeproject.com/articles/43860/an-asynchronous-http-download-class-for-mfc-atl-an
 fix: HttpOpenRequestA and HttpSendRequestA seem to work passing utf-8 params even though the docs recommend always using the W commands
 
@@ -13,9 +23,11 @@ also timeouts might cause memory leaks, are all threads, pointers, structs, vars
 according to this SO thread no need to delete or free unless new or malloc called https://stackoverflow.com/questions/5243360/how-to-free-memory-for-structure-variable
 should smart pointers be used in the workers? the docs mainly talk about cases where new is used https://docs.microsoft.com/en-us/cpp/cpp/smart-pointers-modern-cpp?view=msvc-160
 
+- no auto redirect
+
 fixed: post data size limit - fixed by converting postdata string to char array before sending
 */
-
+#define WIN32_LEAN_AND_MEAN
 #pragma once
 
 // needed for utf-8 url encoding -  see comments at https://alfps.wordpress.com/2011/12/08/unicode-part-2-utf-8-stream-mode/
@@ -109,59 +121,11 @@ namespace wrap {
 
 	struct Timeout {
 		DWORD timeout;
-		std::string type = "connection"; // connection or request
+		std::string type = "request"; // connection or request
 	};
 
 	struct req {
-		std::map<std::string, std::string> headers;
-		bool set_header(std::string key, std::string value) {
-			/* Header names are not case sensitive.
-			From RFC 2616 - "Hypertext Transfer Protocol -- HTTP/1.1", Section 4.2, "Message Headers":
-			Each header field consists of a name followed by a colon (":") and the field value. Field names are case-insensitive.
-			The updating RFC 7230 does not list any changes from RFC 2616 at this part.
-			so we always use fields / keys with lowercase to avoid duplication */
-			std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-			try {
-				if (headers.find(key) == headers.end()) { //if entry doesnt exist
-					headers.insert(std::pair<std::string, std::string>(key, value)); //add it
-				}
-				else { //if entry exists, update value
-					headers[key] = value;
-				}
-				return true;
-			}
-			catch (...) {
-				return false;
-			}
-		};
-		bool clear_headers(std::string key = "") {
-			if (key == "") { //leave empty to clear all 
-				try {
-					headers.clear();
-					return true;
-				}
-				catch (...) {
-					return false;
-				}
 
-			}
-			else {
-				try {
-					std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-					if (headers.find(key) != headers.end()) { // if element exists
-						headers.erase(key);
-						return true;
-					}
-					else {
-						return false;
-					}
-				}
-				catch (...) {
-					return false;
-				}
-			}
-		};
-		//std::string postdata;
 		std::string ua = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0";
 		std::string Params;
 		std::string PostData; // key is type of data (body,payload or file) and value is the data
@@ -194,11 +158,15 @@ namespace wrap {
 		std::map <std::string, std::string> header;
 		std::map <std::string, std::string> sent_headers;
 		std::map <std::string, std::string> secinfo;
+		std::map <std::string, std::string> cookies;
 		std::string url;
 		std::string raw;
 		std::string text;
 		std::string status_code;
 		std::string err;
+		unsigned long uploaded_bytes = 0;
+		unsigned long downloaded_bytes = 0;
+		unsigned long redirect_count = 0;
 	};
 
 
