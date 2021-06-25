@@ -3,8 +3,7 @@
 todo: cookies map response
 todo: send cookies with URL encoding
 todo: preserve session until host change
-
-fix: timeout error when non timeout req after
+todo: make header resp case insensitive
 
 process redirects manually? to allow cookies, bytes sent/recd, and redirect count to be accurate
 fix: auto redirect or not? INTERNET_FLAG_NO_AUTO_REDIRECT https://stackoverflow.com/questions/10707325/wininet-how-to-obtain-server-url-after-301-redirect
@@ -23,7 +22,6 @@ also timeouts might cause memory leaks, are all threads, pointers, structs, vars
 according to this SO thread no need to delete or free unless new or malloc called https://stackoverflow.com/questions/5243360/how-to-free-memory-for-structure-variable
 should smart pointers be used in the workers? the docs mainly talk about cases where new is used https://docs.microsoft.com/en-us/cpp/cpp/smart-pointers-modern-cpp?view=msvc-160
 
-- no auto redirect
 
 fixed: post data size limit - fixed by converting postdata string to char array before sending
 */
@@ -49,14 +47,11 @@ fixed: post data size limit - fixed by converting postdata string to char array 
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include <algorithm> 
 #include <urlmon.h>
 
 
 
 namespace wrap {
-
-
 
 	struct Body { //used for postdata
 		std::string body;
@@ -154,8 +149,23 @@ namespace wrap {
 		};
 	};
 
+	struct Comparator {
+		bool operator() (const std::string& s1, const std::string& s2) const {
+			std::string str1;
+			std::string str2;
+			//std::transform(s1.begin(), s1.end(), str1.begin(), tolower);
+			for (auto& c : s1)
+			{str1 += std::tolower(c);}
+			for (auto& c : s2)
+			{str2 += std::tolower(c);}
+
+			//std::transform(s2.begin(), s2.end(), str2.begin(), tolower);
+			return  str1 < str2;
+		}
+	};
+
 	struct Response {
-		std::map <std::string, std::string> header;
+		std::map <std::string, std::string, Comparator> header;
 		std::map <std::string, std::string> sent_headers;
 		std::map <std::string, std::string> secinfo;
 		std::map <std::string, std::string> cookies;

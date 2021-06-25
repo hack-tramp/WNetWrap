@@ -598,7 +598,7 @@ wrap::Response wrap::httpsreq(wrap::req request) {
 									//header values are left as recd
 									fieldname = token.substr(0, token.find(":"));
 									for (auto& c : fieldname)
-									{c = tolower(c);}
+									{c = std::tolower(c);}
 									//cookies are dealt with on the spot
 									if (fieldname == "set-cookie") {
 										std::string cval = token.substr(token.find(":") + 1);
@@ -749,9 +749,11 @@ wrap::Response wrap::httpsreq(wrap::req request) {
 					output.raw = strResponse;
 					//very basic check to see if its a html doc - if yes then do some very basic parsing to try to get the text content
 					std::string doctype = strResponse.substr(0, 14);
-					std::transform(doctype.begin(), doctype.end(), doctype.begin(), ::tolower);
+					//std::transform(doctype.begin(), doctype.end(), doctype.begin(), ::tolower);
+					for (auto& c : doctype)
+					{c = std::tolower(c);}
 					if (doctype=="<!doctype html") {
-						//std::cout << "html detected!" << std::endl;
+						std::cout << "html detected!" << std::endl;
 						output.text = wrap::text_from_html(strResponse);
 					}
 					else { //if no html found, .text = .raw
