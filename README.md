@@ -235,7 +235,7 @@ unsigned long downloaded_bytes; // How many bytes have been received from the se
 unsigned long redirect_count;   // How many redirects occurred
 ```
 
-The `Header` is a map with an important modification. Its keys are case insensitive as required by [RFC 7230](http://tools.ietf.org/html/rfc7230#section-3.2):
+The `header` is a map with an important modification. Its keys are case insensitive as required by [RFC 7230](http://tools.ietf.org/html/rfc7230#section-3.2):
 ```c++
 wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/get"});
 std::cout << r.header["content-type"] << std::endl;
