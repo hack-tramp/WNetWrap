@@ -279,7 +279,7 @@ Since WNetWrap is built on top of WinINet, it’s important to know what setting
 
 To see the response's security info, you will need to access the `secinfo` map. For example, to get the security certificate:
 ```c++
-my_response.secinfo["certificate"]
+r.secinfo["certificate"]
 ```
 For `www.example.com` this returns:
 ```
@@ -303,12 +303,12 @@ cipher : AES 128-bit encryption algorithm
 ```
 Due to WinInet limitations, some data such as the protocol and encryption type may appear as `(null)` - however this may be found in other parts of the certificate, such as under `Issuer` above. This can also be found as one of several additional elements in the `secinfo` map:
 ```c++
-cout << my_response.secinfo["protocol"]; // example.com: Transport Layer Security 1.2 client-side 
+cout << r.secinfo["protocol"]; // example.com: Transport Layer Security 1.2 client-side 
 ```
 Cycling through the `secinfo` map will show all other available security info:
 ```c++ 
 cout << "security info:" << endl;
-for (auto elem : my_response.secinfo)
+for (auto elem : r.secinfo)
 {
 	cout << elem.first + " : " + elem.second + "\r\n";
 }
