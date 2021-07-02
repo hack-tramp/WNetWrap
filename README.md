@@ -397,5 +397,5 @@ The `Options` constructor allows you to specify additional options for the reque
 wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/get"}, wrap::Options{"redirect" , "off"});
 ```
 
-To enable the option you can use either `on` or `true`, and to turn off either `false` or `off` will do.
+To enable the option you can use either `on` or `true`, and to disable either `false` or `off` will do.
 
