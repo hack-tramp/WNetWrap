@@ -316,7 +316,7 @@ std::cout << r.text << std::endl;
  */
 ```
 
-By default `Cookies` and their values will be URL-encoded. Although this is recommend, it is not mandatory for Cookies to be URL-encoded.
+By default `Cookies` and their values will be URL-encoded. Although this is recommend, it is not mandatory for `Cookies` to be URL-encoded.
 >[...]
 >To maximize compatibility with user agents, servers that wish to
 >store arbitrary data in a cookie-value SHOULD encode that data, for
@@ -325,7 +325,7 @@ By default `Cookies` and their values will be URL-encoded. Although this is reco
 
 Source: [RFC6265](https://www.ietf.org/rfc/rfc6265.txt)
 
-URL-encoding for `Cookies` can be disabled by setting encode cookies to false or off in the `Options` constructor (see more on Options below).
+URL-encoding for `Cookies` can be disabled by setting encode cookies to false or off in the `Options` constructor (see more on `Options` below).
 ```c++
 wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/cookies"},
                   wrap::Cookies{{"ice cream", "is delicious"}}, Options{ {"encode cookies","off"}});
@@ -391,10 +391,10 @@ protocol : Transport Layer Security 1.2 client-side
 
 ### Additional Options
 
-The `Options` constructor allows you to specify addition options for the request. For example, to turn off redirects (which are on by default and handled automatically by WNetWrap):
+The `Options` constructor allows you to specify additional options for the request. For example, to turn off redirects (which are on by default and handled automatically by WNetWrap):
 
 ```c++
-wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/get"}, wrap::Options{"redirect" , "off"});
+wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/get"}, wrap::Options{"redirect" , "off"});
 ```
 
 To enable the option you can use either `on` or `true`, and to turn off either `false` or `off` will do.
