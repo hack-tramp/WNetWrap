@@ -389,7 +389,7 @@ key_exch_strength : 2048
 protocol : Transport Layer Security 1.2 client-side
 ```
 
-### Addition Options
+### Additional Options
 
 The `Options` constructor allows you to specify addition options for the request. For example, to turn off redirects (which are on by default and handled automatically by WNetWrap):
 
