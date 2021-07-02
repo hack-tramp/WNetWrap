@@ -20,15 +20,16 @@ int main()
 
 |Implemented| Upcoming|
 |:------------:|:----------:|
-|Custom headers|Proxy support|
-|Url encoded parameters|Asynchronous requests|
-|Url encoded POST values|Callbacks|
-|Multipart form POST upload|NTLM authentication|
-|File POST upload|Digest authentication|
-|Basic authentication|PUT, PATCH and DELETE methods|
+|Custom headers|Asynchronous requests|
+|Url encoded parameters|Callbacks|
+|Url encoded POST values|NTLM authentication|
+|Multipart form POST upload|Digest authentication|
+|File POST upload|PUT, PATCH and DELETE methods|
+|Basic authentication|
 |Bearer authentication|
 |Connection and request timeout| 
 |Cookie support|
+|Proxy support|
 
 ## Usage
 
@@ -275,6 +276,70 @@ wrap::Timeout{1000,"connection"}
 ```
 Since WNetWrap is built on top of WinINet, it’s important to know what setting this `Timeout` does to the request. It creates a worker thread which executes the connection or request call. This thread is then monitored and killed if it takes longer than the timeout specified. The reason this approach is taken is that the normal method of setting a timeout with WinINet does not work, due to a 20+ year old MS bug. You can find out more about this workaround [here](https://mskb.pkisolutions.com/kb/224318). What it means in practical terms is that `Timeout` cannot be set to a value higher than WinINet's default (currently 1 hour).
 
+### Using Proxies
+
+Setting up a proxy is easy: 
+
+```c++
+wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/get"},
+                  wrap::Proxy{"http://www.fakeproxy.com"});
+std::cout << r.url << std::endl; // Prints http://www.httpbin.org/get, not the proxy url
+```
+
+You have the option of specifying a username and password for the proxy:
+```c++
+wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/get"},
+                  wrap::Proxy{"http://www.fakeproxy.com", "UserName" , "p455w0rd!"});
+```
+
+### Sending & Receiving Cookies
+
+Accessing received cookies is done like this:
+```c++
+wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/cookies/set?cookies=yummy"});
+std::cout << r.cookies["cookies"] << std::endl; // Prints yummy
+std::cout << r.cookies["Cookies"] << std::endl; // Prints nothing
+```
+
+To send new cookies just use `Cookies` in the request:
+```c++
+wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/cookies"},
+                  wrap::Cookies{{"ice cream", "is delicious"}});
+std::cout << r.text << std::endl;
+
+/*
+ * {
+ *   "cookies": {
+ *     "ice%20cream": "is%20delicious"
+ *   }
+ * }
+ */
+```
+
+By default `Cookies` and their values will be URL-encoded. Although this is recommend, it is not mandatory for Cookies to be URL-encoded.
+>[...]
+>To maximize compatibility with user agents, servers that wish to
+>store arbitrary data in a cookie-value SHOULD encode that data, for
+>example, using Base64 [RFC4648].
+>[...]
+
+Source: [RFC6265](https://www.ietf.org/rfc/rfc6265.txt)
+
+URL-encoding for `Cookies` can be disabled by setting encode cookies to false or off in the `Options` constructor (see more on Options below).
+```c++
+wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/cookies"},
+                  wrap::Cookies{{"ice cream", "is delicious"}}, Options{ {"encode cookies","off"}});
+std::cout << r.text << std::endl;
+
+/*
+ * {
+ *   "cookies": {
+ *     "ice cream": "is delicious"
+ *   }
+ * }
+ */
+```
+
 ### Security Certificate Info
 
 To see the response's security info, you will need to access the `secinfo` map. For example, to get the security certificate:
@@ -323,4 +388,14 @@ key_exch : RSA key exchange
 key_exch_strength : 2048
 protocol : Transport Layer Security 1.2 client-side
 ```
+
+### Addition Options
+
+The `Options` constructor allows you to specify addition options for the request. For example, to turn off redirects (which are on by default and handled automatically by WNetWrap):
+
+```c++
+wrap::Response r = wrap::HttpsRequest(wrap::Url{"http://www.httpbin.org/get"}, wrap::Options{"redirect" , "off"});
+```
+
+To enable the option you can use either `on` or `true`, and to turn off either `false` or `off` will do.
 
