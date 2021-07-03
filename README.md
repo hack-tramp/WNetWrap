@@ -1,5 +1,12 @@
-# ![Image](https://github.com/hack-tramp/WNetWrap/blob/main/logo.png?raw=true) WNetWrap  [![MSBuild](https://github.com/hack-tramp/wnetwrap/actions/workflows/msbuild.yml/badge.svg)](https://github.com/hack-tramp/wnetwrap/actions/workflows/msbuild.yml) [![Generic Badge](https://img.shields.io/badge/c%2B%2B-14-blue)](https://github.com/topics/c-plus-plus-11)  [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)<br>
-  
+<p align="center">
+  <img width="200" src="https://github.com/hack-tramp/WNetWrap/blob/main/logo.png?raw=true">
+  <h1 align="center">WNetWrap <br>
+  <img align="center" src="https://github.com/hack-tramp/wnetwrap/actions/workflows/msbuild.yml/badge.svg" href="https://github.com/hack-tramp/wnetwrap/actions/workflows/msbuild.yml">
+	  <img align="center" src="https://img.shields.io/badge/c%2B%2B-14-blue" href="https://github.com/topics/c-plus-plus-14">
+	  <img align="center" src="https://img.shields.io/badge/License-MIT-green.svg" href="https://opensource.org/licenses/MIT">
+  </h1>
+</p>
+
 A tiny, dependency-free wrapper around [WinINet](https://docs.microsoft.com/en-us/windows/win32/wininet/about-wininet) for developers targeting Windows only, who need a lightweight native solution. Inspired by the excellent [CPR library](https://github.com/whoshuu/cpr), it has mostly identical function names, and will likewise work with random parameter order.
 
 Below is a basic GET request - for detailed examples see the documentation below.
