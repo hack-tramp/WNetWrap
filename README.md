@@ -1,9 +1,10 @@
 <p align="center">
   <img width="200" src="https://github.com/hack-tramp/WNetWrap/blob/main/logo.png?raw=true">
   <h1 align="center">WNetWrap <br>
-  <img align="center" src="https://github.com/hack-tramp/wnetwrap/actions/workflows/msbuild.yml/badge.svg" href="https://github.com/hack-tramp/wnetwrap/actions/workflows/msbuild.yml">
 	  <img align="center" src="https://img.shields.io/badge/c%2B%2B-14-blue" href="https://github.com/topics/c-plus-plus-14">
+  	  <img align="center" src="https://github.com/hack-tramp/wnetwrap/actions/workflows/msbuild.yml/badge.svg" href="https://github.com/hack-tramp/wnetwrap/actions/workflows/msbuild.yml">
 	  <img align="center" src="https://img.shields.io/badge/License-MIT-green.svg" href="https://opensource.org/licenses/MIT">
+	  <img align="center" src="https://img.badgesize.io/hack-tramp/WNetWrap/main/wnetwrap.cpp?label=source size">
   </h1>
 </p>
 
