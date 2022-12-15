@@ -1,6 +1,7 @@
 ﻿#include "wnetwrap.h"
 #pragma comment(lib, "Wininet.lib")
-#pragma comment( lib, "urlmon" )
+#pragma comment(lib, "urlmon" )
+#pragma comment(lib, "Ole32.lib")
 
 struct TPARAMS {
 	HINTERNET hInternet = NULL;
