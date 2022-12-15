@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "yungpanz-patch-1" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "yungpanz-patch-1" ]
 
 jobs:
   ci:
